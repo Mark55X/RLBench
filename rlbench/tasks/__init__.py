@@ -114,6 +114,8 @@ from rlbench.tasks.sweep_to_dustpan_of_size import SweepToDustpanOfSize
 from rlbench.tasks.put_books_at_shelf_location import PutBooksAtShelfLocation
 from rlbench.tasks.set_clock_to_time import SetClockToTime
 
+# new task added for drema extension tests
+from rlbench.tasks.reach_target_moving_cube import ReachTargetMovingCube
 
 FS10_V1 = {
     'train': [
