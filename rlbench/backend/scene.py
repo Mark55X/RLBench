@@ -380,7 +380,7 @@ class Scene(object):
                         'Could not get a path for waypoint %d.' % i,
                         self.task) from e
                 ext = point.get_ext()
-                path.visualize()
+                # path.visualize()
 
                 done = False
                 success = False
@@ -392,7 +392,7 @@ class Scene(object):
 
                 point.end_of_path()
 
-                path.clear_visualization()
+                # path.clear_visualization()
 
                 if len(ext) > 0:
                     contains_param = False
