@@ -16,7 +16,6 @@ import rlbench.backend.task as task
 from yarr.utils.video_utils import CircleCameraMotion, TaskRecorder, NeRFTaskRecorder
 from pyrep.objects.dummy import Dummy
 from pyrep.objects.vision_sensor import VisionSensor
-
 import os
 import pickle
 from PIL import Image
@@ -49,6 +48,9 @@ flags.DEFINE_bool('all_variations', True,
                   'Include all variations when sampling epsiodes')
 flags.DEFINE_integer('num_views', 50,
                         'Number of views to collect per timestep for nerf.')
+flags.DEFINE_bool('dynamic_env', False,
+                  'If true, save data for every timestep of the episode. '
+                  'If false, keep the sparse first/last-step behaviour.')
 
 def check_and_make(dir):
     if not os.path.exists(dir):
@@ -594,7 +596,14 @@ def run_all_variations(i, lock, task_index, variation_count, results, file_lock,
 
             while attempts > 0:
                 try:
-                    task_recorder = NeRFTaskRecorder(task_env, cameras_motion, fps=fps, num_views=num_views, masks_cameras=cameras_mask)
+                    task_recorder = NeRFTaskRecorder(
+                        task_env,
+                        cameras_motion,
+                        fps=fps,
+                        num_views=num_views,
+                        masks_cameras=cameras_mask,
+                        dynamic_env=FLAGS.dynamic_env,
+                    )
                     task_recorder._cam_motion[0].save_pose()
                     variation = ex_idx % possible_variations #np.random.randint(possible_variations)
                     task_env = rlbench_env.get_task(t)
