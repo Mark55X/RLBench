@@ -526,14 +526,14 @@ def run_all_variations(i, lock, task_index, variation_count, results, file_lock,
     cameras_motion = []
 
     # create set of cameras
-    cameras.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL))
-    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL_COLOR_CODED))
-    cameras.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL))
-    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL_COLOR_CODED))
-    cameras.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL))
-    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL_COLOR_CODED))
-    cameras.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL))
-    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, render_mode=RenderMode.OPENGL_COLOR_CODED))
+    cameras.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL))
+    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL_COLOR_CODED))
+    cameras.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL))
+    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL_COLOR_CODED))
+    cameras.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL))
+    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL_COLOR_CODED))
+    cameras.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL))
+    cameras_mask.append(VisionSensor.create(resolution=camera_resolution, explicit_handling=True, render_mode=RenderMode.OPENGL_COLOR_CODED))
 
     cam_front = VisionSensor('cam_front')
     pose_front = cam_front.get_pose()
