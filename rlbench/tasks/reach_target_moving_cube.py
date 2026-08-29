@@ -30,12 +30,24 @@ class ReachTargetMovingCube(Task):
         self.target = Shape('target')
         self.success_sensor = ProximitySensor('success')
 
-        # The cube that is moving
+        # Primary moving cube
         self.cube = Shape('moving_cube')
+        # Secondary moving object (parallelepiped / obstacle)
+        self.cube_1 = Shape('moving_cube_1')
 
     def init_episode(self, index: int) -> List[str]:
-        # Constant velocity (10 cm/s)
+        # Save initial positions
+        self.init_pos = np.array(self.cube.get_position())
+        self.init_pos_1 = np.array(self.cube_1.get_position())
+
+        # Reset positions to table surface
+        self.cube.set_position(self.init_pos)
+        self.cube_1.set_position(self.init_pos_1)
+
+        # Velocities
         self.velocity = np.array([0.0, 0.1, 0.0])
+        self.velocity_1 = np.array([0.08, -0.04, 0.0])
+
         self.conditions = [
             TargetReachedCondition(self.target,
                                    self.success_sensor,
@@ -43,16 +55,24 @@ class ReachTargetMovingCube(Task):
                                    distance_threshold=0.05)]
         self.register_success_conditions(self.conditions)
 
-        return ['reach the red target while the cube moves',
-                'touch the red sphere and ignore the moving block']
+        return ['reach the red target while multiple obstacles move',
+                'touch the red sphere and avoid the moving blocks']
 
     def variation_count(self) -> int:
         return 1
 
     def step(self) -> None:
+        # Move primary cube on table plane (Z strictly locked)
         current_pos = self.cube.get_position()
-        new_pos = current_pos + self.velocity * 0.05
-        self.cube.set_position(new_pos)
+        new_x = current_pos[0] + self.velocity[0] * 0.05
+        new_y = current_pos[1] + self.velocity[1] * 0.05
+        self.cube.set_position([new_x, new_y, self.init_pos[2]])
+
+        # Move secondary object on table plane (Z strictly locked)
+        current_pos_1 = self.cube_1.get_position()
+        new_x_1 = current_pos_1[0] + self.velocity_1[0] * 0.05
+        new_y_1 = current_pos_1[1] + self.velocity_1[1] * 0.05
+        self.cube_1.set_position([new_x_1, new_y_1, self.init_pos_1[2]])
 
     def cleanup(self) -> None:
         self.conditions = []
