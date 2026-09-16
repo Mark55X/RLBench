@@ -116,6 +116,7 @@ from rlbench.tasks.set_clock_to_time import SetClockToTime
 
 # new task added for drema extension tests
 from rlbench.tasks.reach_target_moving_cube import ReachTargetMovingCube
+from rlbench.tasks.dynamic_drema_test_1 import DynamicDremaTest1
 
 FS10_V1 = {
     'train': [
