@@ -14,27 +14,37 @@ class TargetReachedCondition(Condition):
         self._distance_threshold = distance_threshold
 
     def condition_met(self):
-        # Check if proximity detector senses the robot arm tip
-        detector_hit = self._detector.is_detected(self._tip)
-        if detector_hit:
-            return True, False
-
-        # Fallback to Euclidean distance between tip and target center
+        # 1. Check Euclidean distance between tip dummy and target center
         tip_pos = np.asarray(self._tip.get_position())
         target_pos = np.asarray(self._target.get_position())
         distance = np.linalg.norm(tip_pos - target_pos)
-        return distance <= self._distance_threshold, False
+        if distance <= self._distance_threshold:
+            return True, False
+
+        # 2. Check proximity sensor volume (using .read() to avoid V-REP -1 error with Dummy handles)
+        if self._detector.still_exists():
+            try:
+                detected, _ = self._detector.read()
+                if detected:
+                    return True, False
+            except Exception:
+                pass
+
+        return False, False
 
 
 class DynamicDremaTest1(Task):
     """
     Dynamic Drema Test 1 Task:
-    - Target: Red spherical marker on the tabletop.
-    - Dynamic Obstacle: Open-box / tunnel structure (ceiling + 2 side walls) that oscillates
-      periodically back and forth along the Y axis directly over the target.
-    - Behavior: When the tunnel is over the target, top-down access is occluded and physically blocked.
-      When the tunnel shifts away, the target is clear and reachable.
+    - Target: Red spherical marker on the tabletop (stays fixed across resets).
+    - Dynamic Obstacle: Open-box / tunnel structure that oscillates symmetrically around
+      the target along the Y axis.
+    - Behavior: Starts from defined scene position, sweeps smoothly past the target to the
+      symmetric opposite side of the table, and turns back symmetrically.
     """
+
+    def __init__(self, pyrep, robot, name: str = 'dynamic_drema_test_1'):
+        super().__init__(pyrep, robot, name=name)
 
     def init_task(self) -> None:
         self.target = Shape('target')
@@ -57,10 +67,14 @@ class DynamicDremaTest1(Task):
         self.init_tunnel_pos = np.array(self.tunnel.get_position())
         self.tunnel.set_position(self.init_tunnel_pos)
 
-        # Extended travel parameters:
-        # - oscillation_amplitude: 0.28m travel (+/- 28 cm across table)
-        # - oscillation_freq: 0.018 rad/step (wider period ~350 steps, avoids turning back prematurely)
-        self.oscillation_amplitude = 0.28
+        # Symmetric oscillation around the target:
+        # Calculate signed offset from target Y to initial tunnel Y
+        raw_offset = self.init_tunnel_pos[1] - self.target_pos[1]
+        sign = -1.0 if raw_offset < 0 else 1.0
+        # Ensure a wide excursion of at least 25 cm on each side of the target
+        self.amplitude = max(abs(raw_offset), 0.25) * sign
+
+        # Slower frequency (~350 steps per full cycle, ~85 steps to reach target from start)
         self.oscillation_freq = 0.018
         self.step_counter = 0
 
@@ -84,10 +98,14 @@ class DynamicDremaTest1(Task):
         return 1
 
     def step(self) -> None:
-        # Periodic oscillation starting from the defined initial scene position
+        # Periodic symmetric oscillation around the target using cosine:
+        # - step=0: cos(0) = 1 -> y = target_y + amplitude = init_tunnel_pos[1] (starts at scene pose)
+        # - step=87: cos(pi/2) = 0 -> y = target_y (passes directly over target)
+        # - step=175: cos(pi) = -1 -> y = target_y - amplitude (symmetric opposite side of target)
+        # - then smoothly reverses and returns
         self.step_counter += 1
-        delta_y = self.oscillation_amplitude * np.sin(self.step_counter * self.oscillation_freq)
-        new_y = self.init_tunnel_pos[1] + delta_y
+        delta_y = self.amplitude * np.cos(self.step_counter * self.oscillation_freq)
+        new_y = self.target_pos[1] + delta_y
 
         # Keep safely within table lateral boundaries [-0.40, +0.40]
         new_y = float(np.clip(new_y, -0.40, 0.40))
@@ -102,5 +120,5 @@ class DynamicDremaTest1(Task):
         return [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
 
     def is_static_workspace(self) -> bool:
-        # Dynamic workspace containing moving obstacles
-        return False
+        # Must be True so RLBench does not randomly sample a new workspace/target position on reset!
+        return True
