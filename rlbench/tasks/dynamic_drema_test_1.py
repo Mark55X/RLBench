@@ -14,15 +14,16 @@ class TargetReachedCondition(Condition):
         self._distance_threshold = distance_threshold
 
     def condition_met(self):
-        # 1. Check Euclidean distance between tip dummy and target center
+        # 1. Strictly check Euclidean distance between gripper tip and target center
         tip_pos = np.asarray(self._tip.get_position())
         target_pos = np.asarray(self._target.get_position())
         distance = np.linalg.norm(tip_pos - target_pos)
         if distance <= self._distance_threshold:
             return True, False
 
-        # 2. Check proximity sensor volume (using .read() to avoid V-REP -1 error with Dummy handles)
-        if self._detector.still_exists():
+        # 2. Check proximity sensor volume only if tip is in close vicinity
+        # (prevents oscillating tunnel passing over the target from triggering false success)
+        if distance <= (self._distance_threshold * 1.5) and self._detector.still_exists():
             try:
                 detected, _ = self._detector.read()
                 if detected:
