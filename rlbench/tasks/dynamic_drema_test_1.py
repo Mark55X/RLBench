@@ -51,6 +51,10 @@ class DynamicDremaTest1(Task):
         self.target = Shape('target')
         self.success_sensor = ProximitySensor('success')
 
+        # Desired end-effector orientation for table interaction:
+        # Franka Panda top-down approach (tool Z-axis pointing downward to tabletop)
+        self.target_ee_orientation = [1.0, 0.0, 0.0, 0.0]
+
         # Open-box / tunnel obstacle
         if Shape.exists('tunnel_obstacle'):
             self.tunnel = Shape('tunnel_obstacle')
@@ -59,6 +63,12 @@ class DynamicDremaTest1(Task):
             self.tunnel = Shape('moving_cube')
         else:
             raise RuntimeError("Could not find 'tunnel_obstacle' in dynamic_drema_test_1 scene.")
+
+    def get_target_ee_pose(self) -> List[float]:
+        """
+        Returns desired 6-DoF end-effector pose [x, y, z, qx, qy, qz, qw] for reaching the target.
+        """
+        return list(self.target.get_position()) + list(self.target_ee_orientation)
 
     def init_episode(self, index: int) -> List[str]:
         # Target position on the table
