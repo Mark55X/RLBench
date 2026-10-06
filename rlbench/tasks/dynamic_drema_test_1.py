@@ -109,19 +109,30 @@ class DynamicDremaTest1(Task):
         return 1
 
     def step(self) -> None:
-        # Periodic symmetric oscillation around the target using cosine:
-        # - step=0: cos(0) = 1 -> y = target_y + amplitude = init_tunnel_pos[1] (starts at scene pose)
-        # - step=87: cos(pi/2) = 0 -> y = target_y (passes directly over target)
-        # - step=175: cos(pi) = -1 -> y = target_y - amplitude (symmetric opposite side of target)
-        # - then smoothly reverses and returns
         self.step_counter += 1
-        delta_y = self.amplitude * np.cos(self.step_counter * self.oscillation_freq)
-        new_y = self.target_pos[1] + delta_y
 
-        # Keep safely within table lateral boundaries [-0.40, +0.40]
+        # =====================================================================
+        # SELECT TUNNEL MOTION MODE (Comment / Uncomment desired mode)
+        # =====================================================================
+
+        # --- MODE 1: COMPLETELY STATIC TUNNEL (Stays at initial scene position) ---
+        new_y = float(self.init_tunnel_pos[1])
+
+        # --- MODE 2: SINGLE PASS (Sweeps across target once and halts at opposite side) ---
+        # phase = min(self.step_counter * self.oscillation_freq, np.pi)
+        # new_y = self.target_pos[1] + self.amplitude * np.cos(phase)
+
+        # --- MODE 3: DOUBLE PASS (Full round trip, then halts at initial side) ---
+        # phase = min(self.step_counter * self.oscillation_freq, 2.0 * np.pi)
+        # new_y = self.target_pos[1] + self.amplitude * np.cos(phase)
+
+        # --- MODE 4: INFINITE CONTINUOUS OSCILLATION (Standard dynamic benchmark) ---
+        # new_y = self.target_pos[1] + self.amplitude * np.cos(self.step_counter * self.oscillation_freq)
+
+        # =====================================================================
+        # Apply tunnel position (constrained to physical table boundaries)
+        # =====================================================================
         new_y = float(np.clip(new_y, -0.40, 0.40))
-
-        # Strictly preserve X and Z (table plane constraint)
         self.tunnel.set_position([self.init_tunnel_pos[0], new_y, self.init_tunnel_pos[2]])
 
     def cleanup(self) -> None:
