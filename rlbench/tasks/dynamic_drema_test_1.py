@@ -85,6 +85,10 @@ class DynamicDremaTest1(Task):
         # Ensure a wide excursion of at least 25 cm on each side of the target
         self.amplitude = max(abs(raw_offset), 0.25) * sign
 
+        # Lateral starting position on one side (starts where oscillation begins at step=0)
+        self.lateral_start_y = float(np.clip(self.target_pos[1] + self.amplitude, -0.40, 0.40))
+        self.tunnel.set_position([self.init_tunnel_pos[0], self.lateral_start_y, self.init_tunnel_pos[2]])
+
         # Slower frequency (~350 steps per full cycle, ~85 steps to reach target from start)
         self.oscillation_freq = 0.018
         self.step_counter = 0
@@ -115,14 +119,14 @@ class DynamicDremaTest1(Task):
         # SELECT TUNNEL MOTION MODE (Comment / Uncomment desired mode)
         # =====================================================================
 
-        # --- MODE 1: COMPLETELY STATIC TUNNEL (Stays at initial scene position) ---
-        new_y = float(self.init_tunnel_pos[1])
+        # --- MODE 1: COMPLETELY STATIC TUNNEL (Stationary at lateral side, away from target) ---
+        new_y = float(self.lateral_start_y)
 
         # --- MODE 2: SINGLE PASS (Sweeps across target once and halts at opposite side) ---
         # phase = min(self.step_counter * self.oscillation_freq, np.pi)
         # new_y = self.target_pos[1] + self.amplitude * np.cos(phase)
 
-        # --- MODE 3: DOUBLE PASS (Full round trip, then halts at initial side) ---
+        # --- MODE 3: DOUBLE PASS (Full round trip, then halts back at lateral side) ---
         # phase = min(self.step_counter * self.oscillation_freq, 2.0 * np.pi)
         # new_y = self.target_pos[1] + self.amplitude * np.cos(phase)
 
