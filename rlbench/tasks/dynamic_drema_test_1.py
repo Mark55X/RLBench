@@ -51,9 +51,16 @@ class DynamicDremaTest1(Task):
         self.target = Shape('target')
         self.success_sensor = ProximitySensor('success')
 
-        # Desired end-effector orientation for table interaction:
-        # Franka Panda top-down approach (tool Z-axis pointing downward to tabletop)
-        self.target_ee_orientation = [1.0, 0.0, 0.0, 0.0]
+        # =====================================================================
+        # TARGET ORIENTATION SPECIFICATION:
+        # - Mode A (Recommended, Position-Only): set target_ee_orientation = None
+        #   Allows Franka to reach the sphere in its most kinematically natural,
+        #   un-twisted configuration with 4mm precision and zero rotational tension.
+        # - Mode B (Natural Franka top-down grasp): [0.92388, -0.38268, 0.0, 0.0]
+        #   Enforces Z-axis pointing down to table with joint 7 at neutral 45 deg.
+        # - Mode C (Rigid horizontal alignment): [1.0, 0.0, 0.0, 0.0]
+        # =====================================================================
+        self.target_ee_orientation = None
 
         # Open-box / tunnel obstacle
         if Shape.exists('tunnel_obstacle'):
@@ -66,9 +73,14 @@ class DynamicDremaTest1(Task):
 
     def get_target_ee_pose(self) -> List[float]:
         """
-        Returns desired 6-DoF end-effector pose [x, y, z, qx, qy, qz, qw] for reaching the target.
+        Returns desired target pose:
+        - 3-DoF [x, y, z] if target_ee_orientation is None (position-only goal)
+        - 7-DoF [x, y, z, qx, qy, qz, qw] if target_ee_orientation is specified
         """
-        return list(self.target.get_position()) + list(self.target_ee_orientation)
+        pos = list(self.target.get_position())
+        if self.target_ee_orientation is not None:
+            return pos + list(self.target_ee_orientation)
+        return pos
 
     def init_episode(self, index: int) -> List[str]:
         # Target position on the table
