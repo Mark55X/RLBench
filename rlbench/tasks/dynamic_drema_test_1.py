@@ -6,32 +6,30 @@ from rlbench.backend.task import Task
 from rlbench.backend.conditions import Condition
 
 
+def _quat_z_axis(quat_xyzw) -> np.ndarray:
+    """Third column of the rotation matrix of a unit quaternion [x, y, z, w]."""
+    x, y, z, w = quat_xyzw
+    return np.array([2.0 * (x * z + w * y), 2.0 * (y * z - w * x), 1.0 - 2.0 * (x * x + y * y)])
+
+
 class TargetReachedCondition(Condition):
-    def __init__(self, target, detector, tip, distance_threshold: float = 0.06):
+    """
+    Reached when the gripper tip is within distance_threshold of the target center AND the gripper
+    axis (tip z-axis) points down within max_approach_angle_deg, i.e. the target is reached from above.
+    Panda_tip shares its z-axis with the flange, so no frame conversion is needed for the axis check.
+    """
+
+    def __init__(self, target, tip, distance_threshold: float = 0.03, max_approach_angle_deg: float = 15.0):
         self._target = target
-        self._detector = detector
         self._tip = tip
         self._distance_threshold = distance_threshold
+        self._max_approach_angle = np.radians(max_approach_angle_deg)
 
     def condition_met(self):
-        # 1. Strictly check Euclidean distance between gripper tip and target center
-        tip_pos = np.asarray(self._tip.get_position())
-        target_pos = np.asarray(self._target.get_position())
-        distance = np.linalg.norm(tip_pos - target_pos)
-        if distance <= self._distance_threshold:
-            return True, False
-
-        # 2. Check proximity sensor volume only if tip is in close vicinity
-        # (prevents oscillating tunnel passing over the target from triggering false success)
-        if distance <= (self._distance_threshold * 1.5) and self._detector.still_exists():
-            try:
-                detected, _ = self._detector.read()
-                if detected:
-                    return True, False
-            except Exception:
-                pass
-
-        return False, False
+        distance = np.linalg.norm(np.asarray(self._tip.get_position()) - np.asarray(self._target.get_position()))
+        z_tip = _quat_z_axis(self._tip.get_quaternion())
+        approach_angle = np.arccos(np.clip(-z_tip[2], -1.0, 1.0))
+        return bool(distance <= self._distance_threshold and approach_angle <= self._max_approach_angle), False
 
 
 class DynamicDremaTest1(Task):
@@ -60,7 +58,8 @@ class DynamicDremaTest1(Task):
         #   Enforces Z-axis pointing down to table with joint 7 at neutral 45 deg.
         # - Mode C (Rigid horizontal alignment): [1.0, 0.0, 0.0, 0.0]
         # =====================================================================
-        self.target_ee_orientation = None
+        self.target_ee_orientation = [0.92388, -0.38268, 0.0, 0.0]
+        self.pregrasp_height = 0.12  # [m] pre-grasp keyframe distance above the target along the gripper axis
 
         # Open-box / tunnel obstacle
         if Shape.exists('tunnel_obstacle'):
@@ -81,6 +80,27 @@ class DynamicDremaTest1(Task):
         if self.target_ee_orientation is not None:
             return pos + list(self.target_ee_orientation)
         return pos
+
+    def get_keyframes(self) -> List[dict]:
+        """
+        Ordered gripper keyframes, recomputed from the current target pose (so they follow a moving
+        target): a pre-grasp pose pregrasp_height above the target along the gripper axis, then the
+        target itself. Same structure a keyframe policy (e.g. PerAct) would provide:
+        'pose' [x, y, z(, qx, qy, qz, qw)], position / approach-axis tolerances to advance, gripper state,
+        and 'approach_funnel': the pre-grasp lies in free space, so only the final descent is kept in the cone.
+        """
+        final_pose = self.get_target_ee_pose()
+        target_pos = np.asarray(final_pose[:3], dtype=np.float64)
+        z_tool = _quat_z_axis(final_pose[3:7]) if len(final_pose) >= 7 else np.array([0.0, 0.0, -1.0])
+        pregrasp_pos = target_pos - self.pregrasp_height * z_tool
+        return [
+            {'name': 'pregrasp', 'pose': list(pregrasp_pos) + list(final_pose[3:]),
+             'position_tolerance': 0.03, 'approach_tolerance_deg': 10.0, 'gripper_open': 1.0,
+             'approach_funnel': False},
+            {'name': 'reach', 'pose': list(final_pose),
+             'position_tolerance': 0.01, 'approach_tolerance_deg': 10.0, 'gripper_open': 1.0,
+             'approach_funnel': True},
+        ]
 
     def init_episode(self, index: int) -> List[str]:
         # Target position on the table
@@ -108,9 +128,9 @@ class DynamicDremaTest1(Task):
         self.conditions = [
             TargetReachedCondition(
                 self.target,
-                self.success_sensor,
                 self.robot.arm.get_tip(),
-                distance_threshold=0.06
+                distance_threshold=0.03,
+                max_approach_angle_deg=15.0
             )
         ]
         self.register_success_conditions(self.conditions)
@@ -127,16 +147,12 @@ class DynamicDremaTest1(Task):
     def step(self) -> None:
         self.step_counter += 1
 
-        # =====================================================================
-        # SELECT TUNNEL MOTION MODE (Comment / Uncomment desired mode)
-        # =====================================================================
-
         # --- MODE 1: COMPLETELY STATIC TUNNEL (Stationary at lateral side, away from target) ---
-        new_y = float(self.lateral_start_y)
+        # new_y = float(self.lateral_start_y)
 
         # --- MODE 2: SINGLE PASS (Sweeps across target once and halts at opposite side) ---
-        # phase = min(self.step_counter * self.oscillation_freq, np.pi)
-        # new_y = self.target_pos[1] + self.amplitude * np.cos(phase)
+        phase = min(self.step_counter * self.oscillation_freq, np.pi)
+        new_y = self.target_pos[1] + self.amplitude * np.cos(phase)
 
         # --- MODE 3: DOUBLE PASS (Full round trip, then halts back at lateral side) ---
         # phase = min(self.step_counter * self.oscillation_freq, 2.0 * np.pi)
@@ -145,9 +161,7 @@ class DynamicDremaTest1(Task):
         # --- MODE 4: INFINITE CONTINUOUS OSCILLATION (Standard dynamic benchmark) ---
         # new_y = self.target_pos[1] + self.amplitude * np.cos(self.step_counter * self.oscillation_freq)
 
-        # =====================================================================
-        # Apply tunnel position (constrained to physical table boundaries)
-        # =====================================================================
+
         new_y = float(np.clip(new_y, -0.40, 0.40))
         self.tunnel.set_position([self.init_tunnel_pos[0], new_y, self.init_tunnel_pos[2]])
 
