@@ -27,7 +27,7 @@ class TargetReachedCondition(Condition):
 class ReachTargetMovingCube(Task):
 
     def init_task(self) -> None:
-        self.target = Shape('target')
+        self.target = Shape('reach_marker')
         self.success_sensor = ProximitySensor('success')
 
         # Primary moving cube

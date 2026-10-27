@@ -46,7 +46,7 @@ class DynamicDremaTest1(Task):
         super().__init__(pyrep, robot, name=name)
 
     def init_task(self) -> None:
-        self.target = Shape('target')
+        self.target = Shape('reach_marker')
         self.success_sensor = ProximitySensor('success')
 
         # =====================================================================
