@@ -118,6 +118,7 @@ from rlbench.tasks.set_clock_to_time import SetClockToTime
 from rlbench.tasks.reach_target_moving_cube import ReachTargetMovingCube
 from rlbench.tasks.dynamic_drema_test_1 import DynamicDremaTest1
 from rlbench.tasks.dynamic_drema_test_2 import DynamicDremaTest2
+from rlbench.tasks.dynamic_drema_test_3 import DynamicDremaTest3
 
 FS10_V1 = {
     'train': [
