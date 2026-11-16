@@ -117,3 +117,5 @@ dmypy.json
 .pyre/
 
 index.html
+# dynamic benchmark videos: too large for GitHub (kept locally)
+rlbench/dynamic_bench/videos/*.mp4
