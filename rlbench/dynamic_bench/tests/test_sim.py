@@ -219,7 +219,7 @@ def test_human_speed(env):
     """The person's speeds scale with the human speed scale (ablations); the metrics report the actual speeds."""
     from rlbench.dynamic_bench import set_human_speed_scale
     set_level('L1')
-    te = env.get_task(get_task_class('dyn_slide_block_target_taken'))
+    te = env.get_task(get_task_class('dyn_slide_block_obstacle_in_path'))
     out = {}
     for scale in (1.0, 0.5):
         set_human_speed_scale(scale)

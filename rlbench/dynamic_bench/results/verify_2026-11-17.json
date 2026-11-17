@@ -158,30 +158,21 @@
    "no_explosion": true,
    "supported": true,
    "oracle": true,
-   "obstacle": true,
    "idle_safe": true
   },
   "notes": [],
   "layout_rejections": 0,
   "events": [
-   "traffic_crossing",
-   "person_starts",
    "person_grabs",
+   "obstacle_coming",
+   "person_starts",
    "person_lets_go",
    "person_done",
-   "person_starts",
-   "person_grabs",
-   "person_done"
+   "obstacle_placed"
   ],
   "person_jobs": [
    {
-    "name": "traffic_out",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   },
-   {
-    "name": "get_ready",
+    "name": "item_in_front_of_jar",
     "status": "done",
     "attempts": 0,
     "reason": ""
@@ -198,22 +189,21 @@
    "no_explosion": true,
    "supported": true,
    "oracle": true,
-   "obstacle": false,
    "idle_safe": true
   },
-  "notes": [
-   "no traffic across the robot's way"
-  ],
+  "notes": [],
   "layout_rejections": 2,
   "events": [
-   "traffic_impossible",
-   "person_starts",
    "person_grabs",
-   "person_done"
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
   ],
   "person_jobs": [
    {
-    "name": "get_ready",
+    "name": "item_in_front_of_jar",
     "status": "done",
     "attempts": 0,
     "reason": ""
@@ -230,1217 +220,6 @@
    "no_explosion": true,
    "supported": true,
    "oracle": true,
-   "obstacle": false,
-   "idle_safe": true
-  },
-  "notes": [
-   "no traffic across the robot's way"
-  ],
-  "layout_rejections": 3,
-  "events": [
-   "traffic_impossible",
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "person_starts"
-  ],
-  "person_jobs": [
-   {
-    "name": "hand_rest",
-    "status": "running",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "person_starts"
-  ],
-  "person_jobs": [
-   {
-    "name": "hand_rest",
-    "status": "running",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "person_starts"
-  ],
-  "person_jobs": [
-   {
-    "name": "hand_rest",
-    "status": "running",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "obstacle_placed",
-   "person_done",
-   "obstacle_cleared"
-  ],
-  "person_jobs": [
-   {
-    "name": "hand_on_board",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "obstacle_placed",
-   "person_done",
-   "obstacle_cleared"
-  ],
-  "person_jobs": [
-   {
-    "name": "hand_on_board",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "obstacle_placed",
-   "person_done",
-   "obstacle_cleared"
-  ],
-  "person_jobs": [
-   {
-    "name": "hand_on_board",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_insert_peg_hand_in_way",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "bottle_in_front_of_rack",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "bottle_in_front_of_rack",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "bottle_in_front_of_rack",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "traffic_crossing",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "traffic_out",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   },
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "traffic_crossing",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "traffic_out",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   },
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_place_wine_bottle_in_path",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "traffic_crossing",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "traffic_out",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   },
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 2,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "item_against_target",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 2,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "item_against_target",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "item_against_target",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 2,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 2,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "book_on_sorter",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "book_on_sorter",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 2,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "book_on_sorter",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_shape_sorter_book_on_hole",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [
-   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
-  ],
-  "layout_rejections": 2,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "book_slid_into_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "book_slid_into_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "book_slid_into_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 3,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 6,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
    "idle_safe": true
   },
   "notes": [],
@@ -1455,805 +234,12 @@
   ],
   "person_jobs": [
    {
-    "name": "obstacle_in_the_way",
+    "name": "item_in_front_of_jar",
     "status": "done",
     "attempts": 0,
     "reason": ""
    }
   ]
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 6,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "obstacle_in_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "obstacle_in_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 3,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 6,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_obstacle_in_path",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 6,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "obstacle_in_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 6,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "obstacle_in_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "person_grabs",
-   "obstacle_coming",
-   "person_starts",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "obstacle_in_the_way",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 6,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 1,
-  "events": [
-   "person_grabs"
-  ],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "block_on_goal",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "block_on_goal",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "block_on_goal",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "traffic_crossing",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "traffic_out",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   },
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "traffic_crossing",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "traffic_out",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   },
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_goal_taken",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": false,
-   "idle_safe": true
-  },
-  "notes": [
-   "no traffic across the robot's way"
-  ],
-  "layout_rejections": 0,
-  "events": [
-   "person_starts",
-   "person_grabs",
-   "person_done"
-  ],
-  "person_jobs": [
-   {
-    "name": "get_ready",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L0",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L0",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L0",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L1",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "tunnel_slid",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L1",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "tunnel_slid",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L1",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "obstacle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [
-   "obstacle_coming",
-   "person_starts",
-   "person_grabs",
-   "person_lets_go",
-   "person_done",
-   "obstacle_placed"
-  ],
-  "person_jobs": [
-   {
-    "name": "tunnel_slid",
-    "status": "done",
-    "attempts": 0,
-    "reason": ""
-   }
-  ]
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L2",
-  "seed": 0,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 5,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L2",
-  "seed": 1,
-  "checks": {
-   "placed": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 11,
-  "events": [],
-  "person_jobs": []
- },
- {
-  "task": "dyn_stack_blocks_tunnel",
-  "level": "L2",
-  "seed": 2,
-  "checks": {
-   "placed": true,
-   "same_layout": true,
-   "still_inactive": true,
-   "no_explosion": true,
-   "supported": true,
-   "oracle": true,
-   "idle_safe": true
-  },
-  "notes": [],
-  "layout_rejections": 0,
-  "events": [],
-  "person_jobs": []
  },
  {
   "task": "dyn_close_jar_item_in_path",
@@ -2270,7 +256,7 @@
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.06,
+  "obstacle_displaced_m": 0.058,
   "keyframes": {
    "n": 6,
    "reached": 6
@@ -2281,8 +267,8 @@
    "obstacle_placed",
    "keyframe_reached",
    "keyframe_reached",
-   "keyframe_reached",
    "obstacle_cleared",
+   "keyframe_reached",
    "keyframe_reached",
    "keyframe_reached"
   ]
@@ -2299,25 +285,260 @@
   },
   "notes": [],
   "success": false,
-  "unsafe": false,
+  "unsafe": true,
   "person_contacts": 0,
-  "obstacle_touched": false,
-  "obstacle_displaced_m": null,
+  "obstacle_touched": true,
+  "obstacle_displaced_m": 0.06,
   "keyframes": {
    "n": 6,
    "reached": 6
   },
-  "toppled": [],
+  "toppled": [
+   "dynbench_kitchen_sugar"
+  ],
   "events": [
-   "traffic_crossing",
-   "keyframe_reached",
-   "keyframe_reached",
    "obstacle_coming",
+   "obstacle_placed",
    "keyframe_reached",
    "keyframe_reached",
+   "traffic_crossing",
+   "obstacle_cleared",
    "keyframe_reached",
-   "obstacle_not_placed"
+   "keyframe_reached",
+   "keyframe_reached"
   ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "person_starts",
+   "obstacle_cleared",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "hand_on_spoke",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_starts",
+   "obstacle_cleared",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "hand_on_spoke",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_starts",
+   "obstacle_cleared",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "hand_on_spoke",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "obstacle_placed",
+   "obstacle_cleared",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "hand_on_spoke",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "obstacle_placed",
+   "obstacle_cleared",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "hand_on_spoke",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "obstacle_placed",
+   "obstacle_cleared",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "hand_on_spoke",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_insert_peg_hand_in_way",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
  },
  {
   "task": "dyn_insert_peg_hand_in_way",
@@ -2346,8 +567,8 @@
    "keyframe_reached",
    "keyframe_reached",
    "keyframe_reached",
-   "obstacle_cleared",
    "keyframe_reached",
+   "obstacle_cleared",
    "keyframe_reached"
   ]
  },
@@ -2379,7 +600,254 @@
    "obstacle_placed",
    "keyframe_reached",
    "keyframe_reached",
+   "obstacle_cleared",
    "keyframe_reached"
+  ]
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "bottle_in_front_of_rack",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "bottle_in_front_of_rack",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "bottle_in_front_of_rack",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "bottle_in_front_of_rack",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "bottle_in_front_of_rack",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_place_wine_bottle_in_path",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "bottle_in_front_of_rack",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
   ]
  },
  {
@@ -2426,7 +894,7 @@
   "notes": [],
   "success": true,
   "unsafe": true,
-  "person_contacts": 1,
+  "person_contacts": 3,
   "obstacle_touched": true,
   "obstacle_displaced_m": null,
   "keyframes": {
@@ -2435,13 +903,255 @@
   },
   "toppled": [],
   "events": [
-   "traffic_crossing",
-   "keyframe_reached",
-   "keyframe_reached",
-   "keyframe_reached",
    "obstacle_coming",
    "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached",
+   "obstacle_not_placed",
    "keyframe_reached"
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 2,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "item_against_target",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 2,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "item_against_target",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "item_against_target",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "item_against_target",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 2,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "item_against_target",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "item_against_target",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
   ]
  },
  {
@@ -2455,11 +1165,40 @@
    "obstacle_matters": true
   },
   "notes": [],
+  "success": true,
+  "unsafe": false,
+  "person_contacts": 0,
+  "obstacle_touched": false,
+  "obstacle_displaced_m": 0.024,
+  "keyframes": {
+   "n": 5,
+   "reached": 5
+  },
+  "toppled": [],
+  "events": [
+   "obstacle_coming",
+   "keyframe_reached",
+   "obstacle_placed",
+   "keyframe_reached",
+   "keyframe_reached"
+  ]
+ },
+ {
+  "task": "dyn_put_groceries_grasp_blocked",
+  "level": "L2 blind",
+  "seed": 0,
+  "checks": {
+   "ran": true,
+   "no_explosion": true,
+   "ground_truth": true,
+   "obstacle_matters": true
+  },
+  "notes": [],
   "success": false,
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.0,
+  "obstacle_displaced_m": 0.001,
   "keyframes": {
    "n": 5,
    "reached": 5
@@ -2475,38 +1214,229 @@
   ]
  },
  {
-  "task": "dyn_put_groceries_grasp_blocked",
-  "level": "L2 blind",
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L0",
   "seed": 0,
   "checks": {
-   "ran": true,
+   "placed": true,
+   "still_inactive": true,
    "no_explosion": true,
-   "ground_truth": true,
-   "obstacle_matters": false
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
   },
   "notes": [
-   "the blind static keyframes went through untouched"
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
   ],
-  "success": true,
-  "unsafe": false,
-  "person_contacts": 0,
-  "obstacle_touched": false,
-  "obstacle_displaced_m": 0.0,
-  "keyframes": {
-   "n": 5,
-   "reached": 5
+  "layout_rejections": 10,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
   },
-  "toppled": [],
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 3,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 2,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 10,
   "events": [
+   "person_grabs",
    "obstacle_coming",
-   "keyframe_reached",
-   "obstacle_placed",
-   "keyframe_reached",
-   "keyframe_reached"
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "box_over_shape",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
   ]
  },
  {
-  "task": "dyn_shape_sorter_book_on_hole",
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 3,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "box_over_shape",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 2,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "box_over_shape",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 10,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 3,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 2,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_box_over_shape",
   "level": "L1 blind",
   "seed": 0,
   "checks": {
@@ -2520,10 +1450,10 @@
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.034,
+  "obstacle_displaced_m": 0.073,
   "keyframes": {
-   "n": 4,
-   "reached": 4
+   "n": 5,
+   "reached": 5
   },
   "toppled": [],
   "events": [
@@ -2531,13 +1461,560 @@
    "obstacle_placed",
    "keyframe_reached",
    "keyframe_reached",
-   "shape_parked",
+   "obstacle_cleared",
+   "keyframe_reached",
    "keyframe_reached"
   ]
  },
  {
-  "task": "dyn_shape_sorter_book_on_hole",
+  "task": "dyn_shape_sorter_box_over_shape",
   "level": "L2 blind",
+  "seed": 0,
+  "checks": {
+   "ran": true,
+   "no_explosion": false,
+   "ground_truth": true,
+   "obstacle_matters": true
+  },
+  "notes": [
+   "explosion: ['cylinder: 9.13 m/s', 'cylinder: z -96.166']"
+  ],
+  "success": true,
+  "unsafe": true,
+  "person_contacts": 1,
+  "obstacle_touched": false,
+  "obstacle_displaced_m": null,
+  "keyframes": {
+   "n": 5,
+   "reached": 5
+  },
+  "toppled": [],
+  "events": [
+   "obstacle_coming",
+   "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached"
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 2,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 13,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 2,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "tablet_on_sorter",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 13,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "tablet_on_sorter",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "tablet_on_sorter",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 2,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 13,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [
+   "moving by themselves in the static task too (not checked): ['cube', 'cylinder', 'moon', 'star', 'triangular_prism']"
+  ],
+  "layout_rejections": 0,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L1 blind",
+  "seed": 0,
+  "checks": {
+   "ran": true,
+   "no_explosion": true,
+   "ground_truth": true,
+   "obstacle_matters": true
+  },
+  "notes": [],
+  "success": false,
+  "unsafe": false,
+  "person_contacts": 0,
+  "obstacle_touched": true,
+  "obstacle_displaced_m": 0.03,
+  "keyframes": {
+   "n": 5,
+   "reached": 5
+  },
+  "toppled": [],
+  "events": [
+   "obstacle_coming",
+   "obstacle_placed",
+   "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached",
+   "shape_parked",
+   "obstacle_cleared"
+  ]
+ },
+ {
+  "task": "dyn_shape_sorter_tablet_on_hole",
+  "level": "L2 blind",
+  "seed": 0,
+  "checks": {
+   "ran": true,
+   "no_explosion": true,
+   "ground_truth": true,
+   "obstacle_matters": true
+  },
+  "notes": [],
+  "success": false,
+  "unsafe": false,
+  "person_contacts": 0,
+  "obstacle_touched": true,
+  "obstacle_displaced_m": 0.008,
+  "keyframes": {
+   "n": 5,
+   "reached": 5
+  },
+  "toppled": [],
+  "events": [
+   "obstacle_coming",
+   "keyframe_reached",
+   "keyframe_reached",
+   "obstacle_placed",
+   "keyframe_reached",
+   "keyframe_reached",
+   "shape_parked"
+  ]
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 2,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 2,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "board_across_the_way",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   },
+   {
+    "name": "book_on_the_board",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "board_across_the_way",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   },
+   {
+    "name": "book_on_the_board",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done"
+  ],
+  "person_jobs": [
+   {
+    "name": "board_across_the_way",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   },
+   {
+    "name": "book_on_the_board",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 2,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_board_pinned",
+  "level": "L1 blind",
   "seed": 0,
   "checks": {
    "ran": true,
@@ -2549,37 +2026,8 @@
   "success": true,
   "unsafe": true,
   "person_contacts": 1,
-  "obstacle_touched": true,
-  "obstacle_displaced_m": null,
-  "keyframes": {
-   "n": 5,
-   "reached": 5
-  },
-  "toppled": [],
-  "events": [
-   "keyframe_reached",
-   "keyframe_reached",
-   "obstacle_coming",
-   "keyframe_reached",
-   "keyframe_reached"
-  ]
- },
- {
-  "task": "dyn_slide_block_book_across",
-  "level": "L1 blind",
-  "seed": 0,
-  "checks": {
-   "ran": true,
-   "no_explosion": true,
-   "ground_truth": true,
-   "obstacle_matters": true
-  },
-  "notes": [],
-  "success": true,
-  "unsafe": false,
-  "person_contacts": 0,
   "obstacle_touched": false,
-  "obstacle_displaced_m": 0.081,
+  "obstacle_displaced_m": 0.054,
   "keyframes": {
    "n": 2,
    "reached": 1
@@ -2592,23 +2040,21 @@
   ]
  },
  {
-  "task": "dyn_slide_block_book_across",
+  "task": "dyn_slide_block_board_pinned",
   "level": "L2 blind",
   "seed": 0,
   "checks": {
    "ran": true,
    "no_explosion": true,
    "ground_truth": true,
-   "obstacle_matters": false
+   "obstacle_matters": true
   },
-  "notes": [
-   "the blind static keyframes went through untouched"
-  ],
+  "notes": [],
   "success": true,
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": false,
-  "obstacle_displaced_m": null,
+  "obstacle_displaced_m": 0.054,
   "keyframes": {
    "n": 2,
    "reached": 1
@@ -2616,8 +2062,213 @@
   "toppled": [],
   "events": [
    "obstacle_coming",
+   "obstacle_placed",
    "keyframe_reached"
   ]
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 3,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 6,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 3,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "obstacle_in_the_way",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 6,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "obstacle_in_the_way",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "person_grabs",
+   "obstacle_coming",
+   "person_starts",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "obstacle_in_the_way",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 3,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 6,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_slide_block_obstacle_in_path",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 1,
+  "events": [
+   "person_grabs"
+  ],
+  "person_jobs": []
  },
  {
   "task": "dyn_slide_block_obstacle_in_path",
@@ -2634,7 +2285,7 @@
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": false,
-  "obstacle_displaced_m": 0.071,
+  "obstacle_displaced_m": 0.069,
   "keyframes": {
    "n": 2,
    "reached": 1
@@ -2674,58 +2325,208 @@
   ]
  },
  {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L1 blind",
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L0",
   "seed": 0,
   "checks": {
-   "ran": true,
+   "placed": true,
+   "still_inactive": true,
    "no_explosion": true,
-   "ground_truth": true,
-   "obstacle_matters": true
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
   },
   "notes": [],
-  "success": true,
-  "unsafe": false,
-  "person_contacts": 0,
-  "obstacle_touched": false,
-  "obstacle_displaced_m": 0.031,
-  "keyframes": {
-   "n": 2,
-   "reached": 1
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
   },
-  "toppled": [],
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
   "events": [
    "obstacle_coming",
-   "obstacle_placed",
-   "keyframe_reached"
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "block_on_goal",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
   ]
  },
  {
-  "task": "dyn_slide_block_target_taken",
-  "level": "L2 blind",
-  "seed": 0,
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L1",
+  "seed": 1,
   "checks": {
-   "ran": true,
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
    "no_explosion": true,
-   "ground_truth": true,
-   "obstacle_matters": true
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
   },
   "notes": [],
-  "success": true,
-  "unsafe": false,
-  "person_contacts": 0,
-  "obstacle_touched": false,
-  "obstacle_displaced_m": 0.032,
-  "keyframes": {
-   "n": 2,
-   "reached": 1
-  },
-  "toppled": [],
+  "layout_rejections": 0,
   "events": [
    "obstacle_coming",
-   "keyframe_reached",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
    "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "block_on_goal",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
   ]
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "block_on_goal",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_goal_taken",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
  },
  {
   "task": "dyn_stack_blocks_goal_taken",
@@ -2739,15 +2540,17 @@
   },
   "notes": [],
   "success": false,
-  "unsafe": false,
+  "unsafe": true,
   "person_contacts": 0,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.03,
+  "obstacle_displaced_m": 0.026,
   "keyframes": {
    "n": 11,
    "reached": 11
   },
-  "toppled": [],
+  "toppled": [
+   "stack_blocks_distractor0"
+  ],
   "events": [
    "obstacle_coming",
    "obstacle_placed",
@@ -2778,7 +2581,7 @@
   "unsafe": true,
   "person_contacts": 1,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.099,
+  "obstacle_displaced_m": 0.05,
   "keyframes": {
    "n": 11,
    "reached": 11
@@ -2791,17 +2594,219 @@
    "keyframe_reached",
    "keyframe_reached",
    "obstacle_coming",
+   "keyframe_reached",
    "obstacle_placed",
-   "keyframe_reached",
-   "keyframe_reached",
    "keyframe_reached",
    "keyframe_reached",
    "obstacle_cleared",
    "keyframe_reached",
    "keyframe_reached",
    "keyframe_reached",
+   "keyframe_reached",
    "keyframe_reached"
   ]
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L0",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L0",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L0",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L1",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "tunnel_slid",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L1",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "tunnel_slid",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L1",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "obstacle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [
+   "obstacle_coming",
+   "person_starts",
+   "person_grabs",
+   "person_lets_go",
+   "person_done",
+   "obstacle_placed"
+  ],
+  "person_jobs": [
+   {
+    "name": "tunnel_slid",
+    "status": "done",
+    "attempts": 0,
+    "reason": ""
+   }
+  ]
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L2",
+  "seed": 0,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 6,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L2",
+  "seed": 1,
+  "checks": {
+   "placed": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 11,
+  "events": [],
+  "person_jobs": []
+ },
+ {
+  "task": "dyn_stack_blocks_tunnel",
+  "level": "L2",
+  "seed": 2,
+  "checks": {
+   "placed": true,
+   "same_layout": true,
+   "still_inactive": true,
+   "no_explosion": true,
+   "supported": true,
+   "oracle": true,
+   "idle_safe": true
+  },
+  "notes": [],
+  "layout_rejections": 0,
+  "events": [],
+  "person_jobs": []
  },
  {
   "task": "dyn_stack_blocks_tunnel",
@@ -2818,7 +2823,7 @@
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.112,
+  "obstacle_displaced_m": 0.104,
   "keyframes": {
    "n": 11,
    "reached": 11
@@ -2853,7 +2858,7 @@
   "unsafe": false,
   "person_contacts": 0,
   "obstacle_touched": true,
-  "obstacle_displaced_m": 0.096,
+  "obstacle_displaced_m": 0.103,
   "keyframes": {
    "n": 11,
    "reached": 11
@@ -2864,9 +2869,9 @@
    "keyframe_reached",
    "obstacle_coming",
    "keyframe_reached",
+   "keyframe_reached",
+   "keyframe_reached",
    "obstacle_placed",
-   "keyframe_reached",
-   "keyframe_reached",
    "keyframe_reached",
    "keyframe_reached",
    "keyframe_reached",

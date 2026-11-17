@@ -36,7 +36,7 @@ class DynSlideBlockObstacleInPath(DynamicBenchTask, SlideBlockToColorTarget):
 
     ITEM_KINDS = KINDS                # what the person puts there (grip)
     # where along the block's way (fraction of its travel; the target counts the block on it at about half the
-    # travel, so the obstacle stands in the first half), or None: on the target square
+    # travel, so the obstacle stands in the first half)
     PLACES = (0.4, 0.3, 0.5)
 
     def build_scene(self) -> None:
@@ -64,10 +64,7 @@ class DynSlideBlockObstacleInPath(DynamicBenchTask, SlideBlockToColorTarget):
         c, s = np.cos(yaw - base), np.sin(yaw - base)
         ext = abs(c) * it.half_extents[0] + abs(s) * it.half_extents[1]
         self.pos = None
-        if self.PLACES is None:      # on the target square, a little towards the block (it meets it first)
-            spots = [self.target_xy - u * k for k in (0.02, 0.0, 0.04)]
-        else:
-            spots = [self.c0[:2] + u * max(d * self.travel, BLOCK_HALF + 0.02 + ext) for d in self.PLACES]
+        spots = [self.c0[:2] + u * max(d * self.travel, BLOCK_HALF + 0.02 + ext) for d in self.PLACES]
         for xy in spots:
             pos = np.array([xy[0], xy[1], TABLE_Z + 0.001])
             if self.item_fits(it, pos, yaw, gap=0.01):
@@ -115,26 +112,3 @@ class DynSlideBlockObstacleInPath(DynamicBenchTask, SlideBlockToColorTarget):
         return {'block_pushed_m': round(float(np.linalg.norm(np.asarray(self.block.get_position())[:2] -
                                                               self.c0[:2])), 3)}
 
-
-class DynSlideBlockTargetTaken(DynSlideBlockObstacleInPath):
-    """
-    slide_block_to_color_target: after the keyframes have been decided, the person puts her mug down on the coloured
-    target square, where the static push keyframe brings the block. Pushed on, the block shoves the mug off the target
-    (it tips over); the mug has to go first.
-    """
-
-    CATEGORY = 'keyframe target taken (pushing task)'
-    OBSTACLE = 'the person\'s mug on the target square'
-    KEYFRAME_SEGMENT = 'pushed onto the target (the end of the push)'
-    SUMMARY = 'the person puts her mug down on the target square the block has to be pushed onto'
-    REMEDIES = ('take the mug away (grasp it by the rim) or push it off the target, then push the block on',
-                'pushing on regardless shoves the mug off the target with the block (it tips over: a side effect)')
-    LEVEL_NOTES = {
-        'L0': 'the mug stands on the target square from the start',
-        'L1': 'the person holds her mug (just picked up from her side of the table) and, right after the start, puts '
-              'it down on the target (peak speed 1 m/s)',
-        'L2': 'she brings it when the gripper is about to push (within 12 cm of the keyframe behind the block, 1 m/s): '
-              'it moves in while the block is being pushed',
-    }
-    ITEM_KINDS = {'mug': 'pinch'}
-    PLACES = None

@@ -36,8 +36,8 @@ class DynCloseJarItemInPath(DynamicBenchTask, CloseJar):
         'L0': 'the item stands in front of the jar from the start',
         'L1': 'the person holds the item (taken from her side of the table) and, right after the start, sets it down '
               'in front of the jar (peak speed 1 m/s); it is at rest when the lid comes',
-        'L2': 'first the person carries a soup can across the lid\'s way (back afterwards) and takes the item in her '
-              'hand; when the robot grasps the lid she brings it (1 m/s): it moves in while the lid is on its way',
+        'L2': 'as L1, and while the robot carries the lid the person carries a soup can across the lid\'s way and '
+              'back (moving obstacles)',
     }
 
     def build_scene(self) -> None:
@@ -84,8 +84,7 @@ class DynCloseJarItemInPath(DynamicBenchTask, CloseJar):
             home = self.place_home(it, rng, self.item_yaw, grip='pinch', reach=[drop])
             if self.level == 'L2':
                 self.place_home(self.soup, rng, 0.0, grip='pinch', avoid=[(home, 0.16)], reach=[drop])
-            else:
-                self.ready_in_hand(it, 'pinch')        # L1: she is about to put it down
+            self.ready_in_hand(it, 'pinch')            # she is about to put it down
 
     def obstacle_in_way(self) -> bool:
         """The item stands (its top above the lid's way) within reach of the lid's straight way."""
@@ -99,19 +98,14 @@ class DynCloseJarItemInPath(DynamicBenchTask, CloseJar):
         return bool(near and it.top_z() > self.w_jar[2] - 0.02)
 
     def update(self, t: float) -> None:
-        if self.phase != 'waiting':
-            return
-        if self.level == 'L1' and t >= 0.2:
+        if self.phase == 'waiting' and t >= 0.2:
             self.start_obstacle(self.job_move_item(self.obstacle, self.item_pos, name='item_in_front_of_jar',
                                                    speed=1.0, grip='pinch'))
-        elif self.level == 'L2':
-            if t >= 0.2:
-                self.start_traffic(self.soup, self.w_lid, self.w_jar, grip='pinch',
-                                   stay_clear=[(self.w_jar, 0.12), (self.w_lid, 0.10), (self.item_pos, 0.10)])
-                self.get_ready(self.obstacle, 'pinch')
-            if self.is_grasped(self.lid):
-                self.start_obstacle(self.job_move_item(self.obstacle, self.item_pos, name='item_in_front_of_jar',
-                                                       speed=1.0, grip='pinch'))
+        # L2: while the robot carries the lid, she carries a soup can across its way and back
+        if self.level == 'L2' and self.phase != 'coming' and self.is_grasped(self.lid) and not self.person.busy:
+            if self.start_traffic(self.soup, self.w_lid, self.w_jar, grip='pinch',
+                                  stay_clear=[(self.w_jar, 0.12), (self.w_lid, 0.10),
+                                              (self.item_pos, self.obstacle.radius + self.soup.radius + 0.04)]):
                 self.finish_traffic(pause=0.5)
 
     def extra_metrics(self) -> dict:

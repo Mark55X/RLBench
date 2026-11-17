@@ -7,10 +7,12 @@ the keyframes are never changed. They check that each scenario unfolds as design
 Remedies shown (one per task; the tasks list the others):
     stack_blocks      park the held block, pick the block off the spot, (L2) unstack the parked one, re-grasp
     close_jar         carry the lid over the item (a detour above it, then the keyframe)
-    shape_sorter      park the shape, push the book off the hole, re-grasp the shape
+    shape_sorter      park the shape, drag the tablet off the hole (pressing on it), re-grasp the shape;
+                      topple the box off the shape (an arc push about its bottom edge), then grasp
     wine              stand the own bottle up, move the person's bottle by the neck, re-grasp the own one
     groceries         pick the item away (or push it), then grasp as decided
-    slide_block       stop the push, take the obstacle away (pick or push), resume the push
+    slide_block       stop the push, take the obstacle away (pick or push) or turn the board about its held end
+                      (an arc push), resume the push
     insert_peg        wait for the hand to leave
 """
 
@@ -22,7 +24,7 @@ from typing import Callable, Dict, List
 import numpy as np
 
 from rlbench.dynamic_bench import get_task_class, set_level
-from rlbench.dynamic_bench.assets import _mesh_world
+from rlbench.dynamic_bench.assets import _mesh_world, quat_to_matrix
 from rlbench.dynamic_bench.core import TABLE_Z, world_aabb
 from rlbench.dynamic_bench.tools.scripted import ScriptedRobot, Timeout, free_table_spot, shape_yaw
 
@@ -31,8 +33,15 @@ GRASPABLE = 0.07         # [m] widest horizontal extent the gripper closes on
 
 
 def solver(name):
+    """Registers a remedy; every remedy first lets the person finish what she is bringing, out of her way."""
     def deco(fn):
-        SOLVERS[name] = fn
+        def run_remedy(rb, task, kfs, rng):
+            rb.hold(0.3)
+            j = task.person.job
+            if task.phase == 'coming' or (j is not None and j.name != 'rest'):
+                settle(rb, task)
+            return fn(rb, task, kfs, rng)
+        SOLVERS[name] = run_remedy
         return fn
     return deco
 
@@ -71,17 +80,22 @@ def narrow(shape):
 def park(rb: ScriptedRobot, task, height: float, avoid, rng, radius: float = 0.045, region=None, prefer=None) -> bool:
     """Puts what the gripper holds down on a free table spot (tip height above the table), keeping the gripper's
     orientation; tries a few spots."""
+    from rlbench.dynamic_bench.core import robot_reachable
     q = rb.arm.get_tip().get_quaternion()
     for _ in range(4):
-        kw = {} if region is None else {'region': region}
-        if prefer is not None:
-            kw['prefer'] = prefer
+        # (by default the near part of the table: a spot the robot surely takes again; the far edge is out of reach)
+        kw = {'region': ((0.10, 0.36), (-0.30, 0.30)) if prefer is None else ((0.10, 0.45), (-0.32, 0.32))} \
+            if region is None else {'region': region}
+        # where the robot can take it again (within its usual reach), unless the caller knows better (stack_blocks
+        # parks where the person can reach; the robot still re-grasps a block there)
+        kw['prefer'] = prefer if prefer is not None else robot_reachable
         spot = free_table_spot(task, radius, avoid, rng, **kw)
         if spot is None:
             return False
         if rb.place(spot + [0, 0, height], 0.0, quat=q):
             return True
         avoid = list(avoid) + [spot]
+        rb.retreat(0.06)                         # (the start may touch something: a little higher)
     return False
 
 
@@ -89,7 +103,8 @@ def settle(rb: ScriptedRobot, task, max_seconds: float = 15.0) -> None:
     """Do not act on an obstacle while it is still being brought (privileged: the script phase); out of the
     person's way meanwhile."""
     rb.hold(0.3)
-    rb.make_room()
+    j = task.person.job
+    rb.make_room(always=task.phase == 'coming' or (j is not None and j.name != 'rest'))
     rb.hold(until=lambda: task.phase != 'coming' and not (task.person.job is not None and
                                                           task.person.job.name not in ('rest',)),
             max_seconds=max_seconds)
@@ -193,10 +208,18 @@ def solve_stack(rb: ScriptedRobot, task, kfs, rng) -> None:
         rb.log('  the stacking spot is taken: park the held block, take the other block off the spot')
         p = task.person
         # within the person's reach (so that, at L2, she can do what she does with a parked block)
+        # (and away from the robot's base and from where the robot waits: she must not have to reach past it)
         reach = (lambda xy: p.reach_lean(p.palm_above(TABLE_Z + 0.11, xy)) is not None and
-                 np.linalg.norm(xy - task.goal[:2]) > 0.15)
+                 np.linalg.norm(xy - task.goal[:2]) > 0.15 and
+                 np.linalg.norm(xy - np.array([-0.31, 0.0])) > 0.45 and
+                 np.linalg.norm(xy - rb.safe_pose()[:2]) > 0.30)
         if not park(rb, task, 0.5 * 0.05 + 0.004, [task.goal], rng, prefer=reach):
             return False
+        # step back and let the person do what she does with the parked block (L2) before moving on
+        rb.make_room(always=True)
+        rb.hold(1.5)
+        rb.hold(until=lambda: getattr(task, 'park_phase', 'none') not in ('parked', 'second_coming') and not task.person.busy,
+                max_seconds=25.0)
         rb.wait_person()
         blk = task.obstacle
         spot2 = free_table_spot(task, 0.045, [task.goal, held.get_position()], rng)
@@ -214,7 +237,18 @@ def solve_stack(rb: ScriptedRobot, task, kfs, rng) -> None:
                     not rb.place(spot3 + [0, 0, 0.5 * 0.05 + 0.004], shape_yaw(top)):
                 return False
         rb.log('  re-grasp the parked block, back to the keyframes')
-        return _pick_block(rb, held)
+        if not _pick_block(rb, held):
+            return False
+        from rlbench.dynamic_bench.core import ROBOT_BASE_XY, robot_reachable
+        if np.linalg.norm(np.asarray(held.get_position())[:2] - ROBOT_BASE_XY) > 0.66:
+            # parked where she can reach, at the edge of the robot's reach: the grasp there is not precise enough
+            # for a tower; put it down nearer and take it again
+            near = free_table_spot(task, 0.045, [task.goal], rng, region=((0.05, 0.30), (-0.28, 0.28)),
+                                   prefer=lambda xy: robot_reachable(xy, 0.10))
+            if near is not None and rb.place(near + [0, 0, 0.5 * 0.05 + 0.004], shape_yaw(held)):
+                rb.log('  regrasp nearer, for a precise grasp')
+                return _pick_block(rb, held)
+        return True
     rb.follow_keyframes(kfs, before=before)
     rb.hold(2.0)
 
@@ -247,13 +281,18 @@ def solve_close_jar(rb: ScriptedRobot, task, kfs, rng) -> None:
     rb.hold(1.5)
 
 
-@solver('dyn_shape_sorter_book_on_hole')
-def solve_sorter(rb: ScriptedRobot, task, kfs, rng) -> None:
+def _sorter_grasp_point(task):
     from pyrep.objects.dummy import Dummy
     from rlbench.tasks.place_shape_in_shape_sorter import SHAPE_NAMES
+    return Dummy(SHAPE_NAMES[task.variation].replace(' ', '_') + '_grasp_point')
+
+
+@solver('dyn_shape_sorter_tablet_on_hole')
+def solve_sorter(rb: ScriptedRobot, task, kfs, rng) -> None:
+    from rlbench.dynamic_bench.core import robot_reachable
     closes, opens = transitions(kfs)
     above_hole = opens[0] - 1
-    gp = Dummy(SHAPE_NAMES[task.variation].replace(' ', '_') + '_grasp_point')
+    gp = _sorter_grasp_point(task)
     shape = task.shape
 
     def before(i):
@@ -262,24 +301,87 @@ def solve_sorter(rb: ScriptedRobot, task, kfs, rng) -> None:
         settle(rb, task)
         if not task.obstacle_in_way():
             return True
-        rb.log('  the book covers the hole: park the shape, slide the book off, re-grasp the shape')
+        rb.log('  the tablet covers the hole: park the shape, drag the tablet off (pressing on it), re-grasp')
         h = gp.get_position()[2] - world_aabb(shape)[0][2]
-        parked = park(rb, task, h + 0.004, [task.hole], rng, radius=0.04)
-        if not parked:
-            rb.log('  no way to park the shape: push the book off with the shape in the hand')
+        if not park(rb, task, h + 0.004, [task.hole], rng, radius=0.04):
+            rb.log('  no way to park the shape')
+            return False
         rb.wait_person()
-        book = task.book
-        from rlbench.dynamic_bench.core import robot_reachable
-        c = book.position()[:2]
-        # off the sorter (it drops flat), along a side of it, where the gripper can start and end the push
-        sides = [np.array([np.cos(a), np.sin(a)]) for a in np.arange(4) * np.pi / 2 + task.sorter_yaw]
-        sides.sort(key=lambda d: -(robot_reachable(c - d * 0.15, 0.03) + robot_reachable(c + d * 0.25, 0.03)))
-        for d in sides:
-            if push_off(rb, task, book.shape, d, 0.008, extra=0.12):
+        tb = task.tablet
+        f = tb.frame()
+        c = f[:2, 3]
+        # along a side of the sorter: the shortest drag that uncovers the hole, the tablet's centre staying on the
+        # sorter (it would tip off), where the gripper can press and end
+        options = []
+        for k in range(4):
+            a = task.sorter_yaw + k * np.pi / 2
+            d = np.array([np.cos(a), np.sin(a)])
+            h_d = abs(np.dot(f[:2, 0], d)) * tb.half_extents[0] + abs(np.dot(f[:2, 1], d)) * tb.half_extents[1]
+            dist = h_d + float(np.dot(task.hole[:2] - c, d)) + 0.06       # its edge well clear of the hole
+            end_c = c + d * dist
+            on = abs(float(np.dot(end_c - task.sorter_xy, d))) < task.sorter_half + 0.012   # (the plate's edge)
+            if robot_reachable(c, 0.04) and robot_reachable(end_c, 0.04):
+                options.append((not on, dist, d))       # where it stays on the sorter first, then the shortest
+        options.sort(key=lambda o: (o[0], o[1]))
+        if not options:
+            rb.log('    no way to drag it off the hole')
+        for _, dist, d in options[:2]:
+            rb.log(f'    drag from {np.round(c, 3)} along {np.round(d, 2)} by {dist:.3f} m')
+            rb.drag(c, tb.top_z(), d, dist)
+            rb.hold(0.5)
+            if not task.obstacle_in_way():
                 break
-        if not parked:
-            return rb.is_holding(shape) if hasattr(rb, 'is_holding') else task.is_grasped(shape)
+            c = tb.frame()[:2, 3]
         return rb.pick(shape, gp.get_position(), 0.0, quat=gp.get_quaternion())
+    rb.follow_keyframes(kfs, before=before)
+    rb.hold(1.5)
+
+
+@solver('dyn_shape_sorter_box_over_shape')
+def solve_box(rb: ScriptedRobot, task, kfs, rng) -> None:
+    from rlbench.dynamic_bench.core import ROBOT_BASE_XY
+    closes, opens = transitions(kfs)
+    above_shape = closes[0] - 1
+    gp = _sorter_grasp_point(task)
+
+    def before(i):
+        if i not in (above_shape, closes[0]):
+            return True
+        if task.is_grasped(task.shape):
+            return 'skip'                      # (grasped by the remedy: the approach and the grasp are done)
+        settle(rb, task)
+        if not task.obstacle_in_way():
+            return True
+        if not topple():
+            return False
+        # the shape may have turned a little as the box went over it: grasp it as the demo did (the grasp point
+        # moves with it), so that the next keyframes bring it to the hole aligned
+        return 'skip' if rb.pick(task.shape, gp.get_position(), 0.0, quat=gp.get_quaternion()) else False
+
+    def topple() -> bool:
+        bx = task.box
+        hw = float(bx.half_extents[0])
+        rb.log('  the box covers the shape: topple it (push high on one side, following its edge)')
+        for _ in range(2):
+            c = bx.position()[:2]
+            dirs = [d for d in task.box_axes(bx.yaw()) if task.topple_ok(c, d)]
+            # not where the open fingers of the grasp keyframe come down (the box lies down on that side), then
+            # away from the robot
+            fa = quat_to_matrix(kfs[closes[0]]['quaternion'])[:2, 1]
+            fa = fa / max(np.linalg.norm(fa), 1e-9)
+            away = (c - ROBOT_BASE_XY) / np.linalg.norm(c - ROBOT_BASE_XY)
+            dirs.sort(key=lambda d: (round(abs(float(np.dot(d, fa))), 1), -float(np.dot(d, away))))
+            for d in dirs:
+                hc = 0.7 * bx.height
+                pivot = np.r_[c + d * hw, TABLE_Z]
+                start = np.r_[c - d * (hw + 0.012), TABLE_Z + hc]
+                axis = np.cross([0.0, 0.0, 1.0], np.r_[d, 0.0])
+                rb.log(f'    topple along {np.round(d, 2)} from {np.round(start, 3)}')
+                rb.arc_push(pivot, start, axis, np.radians(60), float(np.arctan2(d[1], d[0])) + np.pi / 2)
+                rb.hold(1.0)
+                if not task.obstacle_in_way():
+                    return True
+        return not task.obstacle_in_way()
     rb.follow_keyframes(kfs, before=before)
     rb.hold(1.5)
 
@@ -355,8 +457,9 @@ def solve_groceries(rb: ScriptedRobot, task, kfs, rng) -> None:
     rb.hold(1.5)
 
 
-@solver('dyn_slide_block_obstacle_in_path')
-def solve_slide(rb: ScriptedRobot, task, kfs, rng) -> None:
+def _slide(rb: ScriptedRobot, task, kfs, clear_obstacle: Callable[[], bool]) -> None:
+    """Pushes the block along the static keyframes; stops while the obstacle is in the way (or being brought),
+    clears it (clear_obstacle), goes back behind the block and pushes on."""
     push = len(kfs) - 1                         # behind the block -> pushed onto the target
     start = np.asarray(kfs[push - 1]['position'])
     rel = start[:2] - task.c0[:2]               # the tip behind the block, as decided
@@ -367,17 +470,13 @@ def solve_slide(rb: ScriptedRobot, task, kfs, rng) -> None:
         rb.wait_person()
         if not task.obstacle_in_way():
             return True
-        it = task.obstacle
-        rb.log(f'  the {task.obstacle_kind} is in the block\'s way: take it away')
-        if task.obstacle_kind == 'mug' and pick_away(rb, task, it.shape, rng, [task.c0, task.end]):
-            return True
-        d = away_direction(task, it.position(), along=task.u, avoid=[task.end])
-        return push_off(rb, task, it.shape, d, 0.02)
+        return clear_obstacle()
 
     if not rb.follow_keyframes(kfs, stop=push):
         return
     q = kfs[push]['quaternion']
     goal = np.asarray(kfs[push]['position'])
+
     def busy():                                # the obstacle is in the way, or the person is moving it
         j = task.person.job
         return task.obstacle_in_way() or task.phase == 'coming' or (j is not None and j.name not in ('rest',))
@@ -407,13 +506,50 @@ def solve_slide(rb: ScriptedRobot, task, kfs, rng) -> None:
     rb.hold(1.5)
 
 
-SOLVERS['dyn_slide_block_target_taken'] = solve_slide
-SOLVERS['dyn_slide_block_book_across'] = solve_slide
+@solver('dyn_slide_block_obstacle_in_path')
+def solve_slide(rb: ScriptedRobot, task, kfs, rng) -> None:
+    def take_away() -> bool:
+        it = task.obstacle
+        rb.log(f'  the {task.obstacle_kind} is in the block\'s way: take it away')
+        if task.obstacle_kind == 'mug' and pick_away(rb, task, it.shape, rng, [task.c0, task.end]):
+            return True
+        d = away_direction(task, it.position(), along=task.u, avoid=[task.end])
+        return push_off(rb, task, it.shape, d, 0.02)
+    _slide(rb, task, kfs, take_away)
+
+
+@solver('dyn_slide_block_board_pinned')
+def solve_board(rb: ScriptedRobot, task, kfs, rng) -> None:
+    def rotate() -> bool:
+        bd = task.board
+        for _ in range(2):
+            pivot = task.pivot()
+            f = bd.frame()
+            axis_b = f[:2, 0]
+            c = f[:2, 3]
+            # the free end: the end away from the pivot
+            free = c + axis_b * bd.half_extents[0] * (1.0 if np.dot(c - pivot, axis_b) > 0 else -1.0)
+            r_dir = (free - pivot) / np.linalg.norm(free - pivot)
+            r = float(np.linalg.norm(free - pivot)) - 0.03
+            e = task.swing if task.swing is not None else task.u
+            e = e - r_dir * np.dot(e, r_dir)                        # perpendicular to the board
+            e = e / np.linalg.norm(e)
+            contact = pivot + r_dir * r - e * (bd.half_extents[1] + 0.012)
+            sgn = 1.0 if np.cross(r_dir, e) > 0 else -1.0         # turning about +z moves r_dir towards e if > 0
+            rb.log(f'  the board is across the block\'s way, held by the book: turn it about {np.round(pivot, 3)}, '
+                   f'its free end along {np.round(e, 2)}')
+            rb.arc_push(np.r_[pivot, TABLE_Z], np.r_[contact, TABLE_Z + 0.009], [0.0, 0.0, sgn], np.radians(85),
+                        float(np.arctan2(e[1], e[0])) + np.pi / 2)
+            rb.hold(0.5)
+            if not task.obstacle_in_way():
+                return True
+        return not task.obstacle_in_way()
+    _slide(rb, task, kfs, rotate)
 
 
 @solver('dyn_stack_blocks_tunnel')
 def solve_tunnel(rb: ScriptedRobot, task, kfs, rng) -> None:
-    from rlbench.dynamic_bench.core import robot_reachable
+    from rlbench.dynamic_bench.tasks.dyn_stack_blocks_tunnel import push_ok
     closes, opens = transitions(kfs)
     above = closes[task.covered_index] - 1   # above the block the tunnel covers
 
@@ -426,9 +562,11 @@ def solve_tunnel(rb: ScriptedRobot, task, kfs, rng) -> None:
         tn = task.tunnel
         u = tn.frame()[:2, 0]                 # the tunnel's opening
         c = tn.position()[:2]
-        rb.log('  the tunnel covers the block: slide it off along its opening, pushing the roof')
+        rb.log(f'  the tunnel covers the block: slide it off along its opening, pushing the roof (tunnel at '
+               f'{np.round(c, 3)}, opening {np.round(u, 2)}, ends reachable '
+               f'{[bool(push_ok(c, d)) for d in (u, -u)]})')
         # from the end the gripper can get to, just far enough for the block to come out of it
-        for dd in sorted((u, -u), key=lambda d: -float(robot_reachable(c - d * 0.115, 0.05))):
+        for dd in sorted((u, -u), key=lambda d: -float(push_ok(c, d))):
             start = np.r_[c - dd * (0.08 + 0.035), 0.0]
             if rb.push(start, np.r_[dd, 0.0], 0.20, tn.height - 0.010, steps=100):
                 rb.hold(0.5)
@@ -446,12 +584,10 @@ def solve_peg(rb: ScriptedRobot, task, kfs, rng) -> None:
     def before(i):
         if i != above:
             return True
-        if task.level == 'L0':
-            rb.log('  the hand rests next to the spoke for good: insert carefully, from above')
-            return True
         rb.hold(1.0)
         if task.obstacle_in_way() or task.person.busy:
-            rb.log('  the hand is at the spoke: wait for it to leave')
+            rb.log('  the hand is on the spoke: wait for it to leave, out of its way')
+            rb.make_room(always=True)
         rb.hold(until=lambda: not task.obstacle_in_way() and not (task.person.busy and task.person.job is not None
                                                                   and task.person.job.name != 'rest'),
                 max_seconds=30.0)

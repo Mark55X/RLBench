@@ -72,7 +72,8 @@ class ScriptedRobot:
 
     def go_safe(self) -> None:
         q = matrix_to_quat(quat_to_matrix(self.arm.get_tip().get_quaternion()))
-        self.move(self.safe_pose(), q)
+        if not self.move(self.safe_pose(), q):
+            self.retreat(0.20)                     # at least up, out of the person's way
 
     def wait_person(self, max_seconds: float = 40.0) -> None:
         """Waits while the person is doing something (a polite robot), out of the way: gripper up and back towards
@@ -93,6 +94,12 @@ class ScriptedRobot:
         q = self.q()
         for _ in range(3):
             self.act(q)
+        if open_ and self.gripper.get_grasped_objects():
+            # an object nearly as wide as the open gripper (the jar lid) leaves it "open" while held: RLBench's
+            # discrete action then sees no change and never lets go
+            self.gripper.release()
+            for _ in range(2):
+                self.act(q)
 
     def top_down(self, finger_yaw: float, flip: bool = False) -> np.ndarray:
         """Quaternion of a vertical, top-down gripper whose fingers close along the horizontal direction finger_yaw
@@ -218,17 +225,134 @@ class ScriptedRobot:
         self.set_gripper(True)
         return True
 
+    def finger_offset(self) -> float:
+        """Height of the tip above the lowest point of the fingers."""
+        from pyrep.const import ObjectType
+        from rlbench.dynamic_bench.core import world_aabb
+        low = min(world_aabb(s)[0][2] for s in self.gripper.get_objects_in_tree(object_type=ObjectType.SHAPE)
+                  if s.is_respondable())
+        return float(self.tip()[2] - low)
+
+    def arc_push(self, pivot, start, axis, angle: float, finger_yaw: float, step_deg: float = 5.0) -> bool:
+        """Pushes along an arc: the tip, from start, turns about the axis through pivot by angle [rad], the closed
+        gripper top-down: a box tipped about its bottom edge (horizontal axis), a board turned about a held end
+        (vertical axis). The gripper comes down 3 cm before start (back along the arc) and lifts at the end."""
+        pivot, start = np.asarray(pivot, dtype=np.float64), np.asarray(start, dtype=np.float64)
+        k = np.asarray(axis, dtype=np.float64)
+        k = k / np.linalg.norm(k)
+        v = start - pivot
+        tangent = np.cross(k, v)
+        tangent = tangent / np.linalg.norm(tangent)
+        pre = start - tangent * 0.03
+        self.set_gripper(False)
+        for q in (self.top_down(finger_yaw), self.top_down(finger_yaw, True)):
+            if self.move(pre + [0, 0, 0.10], q) and self.move(pre, q, linear=True, ignore_collisions=True):
+                break
+            self.retreat(0.06)
+        else:
+            return False
+        if not self.move(start, q, linear=True, ignore_collisions=True, steps=15):
+            self.retreat(0.10)
+            return False
+        for a in np.radians(np.arange(step_deg, np.degrees(angle) + 1e-6, step_deg)):
+            vr = v * np.cos(a) + np.cross(k, v) * np.sin(a) + k * np.dot(k, v) * (1.0 - np.cos(a))
+            if not self.move(pivot + vr, q, linear=True, ignore_collisions=True, steps=10):
+                self.log(f'    the arc stops at {np.degrees(a):.0f} deg')
+                self.retreat(0.10)
+                return False
+        self.retreat(0.10)
+        return True
+
+    def drag(self, press_xy, top_z: float, direction, distance: float, press: float = 0.008) -> bool:
+        """Drags a flat object: the closed gripper presses on its top (the finger tips press below its top surface)
+        and moves along direction; the object comes along by friction (the fingers grip it better than the surface
+        under it does). Lifts at the end."""
+        d = np.asarray(direction, dtype=np.float64)[:2]
+        d = d / np.linalg.norm(d)
+        a = float(np.arctan2(d[1], d[0]))
+        self.set_gripper(False)
+        xy = np.asarray(press_xy, dtype=np.float64)[:2]
+        for q in (self.top_down(a + np.pi / 2), self.top_down(a + np.pi / 2, True), self.top_down(a),
+                  self.top_down(a, True)):
+            if self.move(np.r_[xy, top_z + 0.10], q):
+                s = np.r_[xy, top_z + self.finger_offset() - press]      # (the gripper is top-down now)
+                if self.move(s, q, linear=True, ignore_collisions=True):
+                    break
+            self.retreat(0.06)
+        else:
+            return False
+        ok = self.move(s + np.r_[d * distance, 0.0], q, linear=True, ignore_collisions=True,
+                       steps=max(40, int(distance / 0.0015)))
+        self.retreat(0.08)
+        return ok
+
     # --- static keyframes -------------------------------------------------------------------------------------------
+
+    def move_joints(self, q_target, check: bool = True, max_step: float = 0.05) -> bool:
+        """Straight to a joint configuration (interpolated in joint space), if no configuration along the way makes
+        the arm touch something (check); False without moving otherwise."""
+        q0 = self.q()
+        q1 = np.asarray(q_target, dtype=np.float64)
+        n = max(2, int(np.ceil(np.max(np.abs(q1 - q0)) / max_step)))
+        path = [q0 + (q1 - q0) * k / n for k in range(1, n + 1)]
+        if check:
+            from pyrep.backend import sim
+            from pyrep.const import ObjectType
+            fingers = [g.get_handle() for g in self.gripper.get_objects_in_tree(object_type=ObjectType.SHAPE)
+                       if g.is_respondable()]
+            held = {o.get_handle() for o in self.gripper.get_grasped_objects()}
+            # the benchmark's things (the arm check does not look at the gripper)
+            things = [it.shape for it in self.task.items.values() if not it.hidden and
+                      it.shape.get_handle() not in held]
+            try:
+                for qk in path[::2] + [path[-1]]:
+                    self.arm.set_joint_positions(list(qk), disable_dynamics=True)
+                    if self.arm.check_arm_collision():
+                        return False
+                    for t in things:
+                        was = t.is_collidable()
+                        t.set_collidable(True)
+                        hit = any(sim.simCheckCollision(f, t.get_handle()) == 1 for f in fingers)
+                        t.set_collidable(was)
+                        if hit:
+                            return False
+            finally:
+                self.arm.set_joint_positions(list(q0), disable_dynamics=True)
+        for qk in path:
+            if self.person_close():
+                self.hold(until=lambda: not self.person_close(0.28), max_seconds=15.0)
+            for _ in range(5):
+                self.act(qk)
+                if np.max(np.abs(self.q() - qk)) < 0.02:
+                    break
+        for _ in range(10):
+            if np.max(np.abs(self.q() - q1)) < 0.01:
+                break
+            self.act(q1)
+        return True
 
     def to_keyframe(self, kf: dict) -> bool:
         """Tip to the keyframe pose (collision-aware path planned now, or a linear path for a keyframe the demo
         reached ignoring collisions), then the gripper as the keyframe says."""
         pos, quat = np.asarray(kf['position'], dtype=np.float64), kf['quaternion']
-        if kf.get('ignore_collisions', 0.0) > 0.5:
+        # the static plan's own arm configuration there, if the way to it is free (then the straight motions that
+        # follow, a descent to grasp or to release, are the ones the demo could do)
+        q_kf = kf.get('joint_positions')
+        if q_kf is not None and self.move_joints(q_kf, check=kf.get('ignore_collisions', 0.0) < 0.5 or
+                                                 np.linalg.norm(self.tip() - pos) < 0.15) and \
+                np.linalg.norm(self.tip() - pos) < 0.02:
+            ok = True                                   # (there: the arm did not get stuck on something)
+        elif kf.get('ignore_collisions', 0.0) > 0.5:
             ok = self.move(pos, quat, linear=True, ignore_collisions=True) or \
                 self.move(pos, quat, ignore_collisions=True)
         else:
             ok = self.move(pos, quat)
+        if not ok and np.linalg.norm(self.tip() - pos) > 0.01:
+            # the start may touch something (what it holds, a neighbour): straight up a little, plan again
+            self.retreat(0.08)
+            ok = self.move(pos, quat, ignore_collisions=kf.get('ignore_collisions', 0.0) > 0.5)
+            if not ok and kf.get('ignore_collisions', 0.0) > 0.5:
+                ok = self.move(pos, quat)                       # a collision-aware path may exist where IK did not
         if not ok and np.linalg.norm(self.tip() - pos) > 0.01:
             return False
         # (a keyframe that only turns the wrist where the tip already is still opens / closes the gripper)
@@ -261,19 +385,31 @@ class ScriptedRobot:
 
     def follow_keyframes(self, kfs, start: int = 0, stop: Optional[int] = None,
                          before: Optional[Callable[[int], bool]] = None) -> bool:
-        """Executes keyframes start..stop-1; before(i) runs before keyframe i (a remedy; False: give up). The robot
-        waits while the person's hand works near its next way."""
+        """Executes keyframes start..stop-1; before(i) runs before keyframe i (a remedy; False: give up; 'skip': the
+        remedy already did what keyframe i is for, e.g. it grasped the object). The robot waits while the person's
+        hand works near its next way."""
         stop = len(kfs) if stop is None else stop
         for i in range(start, stop):
-            if before is not None and before(i) is False:
+            r = before(i) if before is not None else True
+            if r is False:
                 return False
+            if r == 'skip':
+                continue
             if self.person_near_way(kfs[i]['position']):
+                # a polite robot lets her finish what she is doing (and what she carries pass), out of her way
                 self.log(f'  the person works near the way to keyframe {i}: wait')
-                self.make_room(always=getattr(self, 'room_always', False))
-                self.hold(until=lambda: not self.person_near_way(kfs[i]['position']), max_seconds=20.0)
+                self.make_room(always=getattr(self, 'room_always', True))
+                p = self.task.person
+                self.hold(until=lambda: (p.job is None or p.job.name == 'rest') and not p.queue, max_seconds=40.0)
             if not self.to_keyframe(kfs[i]):
-                self.log(f'  keyframe {i} cannot be reached as decided')
-                return False
+                # something may have come into the way meanwhile (an obstacle brought while the robot moved): the
+                # remedy once more, then the keyframe again
+                r = before(i) if before is not None else False
+                if r == 'skip':
+                    continue
+                if r is False or not self.to_keyframe(kfs[i]):
+                    self.log(f'  keyframe {i} cannot be reached as decided')
+                    return False
         return True
 
     def pick_along(self, obj_shape, grasp_point, quat, approach_vec, lift: float = 0.05) -> bool:

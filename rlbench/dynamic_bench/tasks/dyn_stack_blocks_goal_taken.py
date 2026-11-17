@@ -4,7 +4,7 @@ import numpy as np
 from pyrep.objects.shape import Shape
 
 from rlbench.backend.exceptions import BoundaryError
-from rlbench.dynamic_bench.core import TABLE_Z, DynamicBenchTask, world_aabb
+from rlbench.dynamic_bench.core import ROBOT_BASE_XY, TABLE_Z, DynamicBenchTask, world_aabb
 from rlbench.tasks.stack_blocks import StackBlocks
 
 BLOCK = 0.05                 # [m] block edge
@@ -32,10 +32,9 @@ class DynStackBlocksGoalTaken(DynamicBenchTask, StackBlocks):
         'L0': 'a distractor block stands on the stacking spot from the start',
         'L1': 'right after the start the person moves a distractor block onto the stacking spot (peak speed 1.1 m/s);'
               ' it is at rest when the robot gets there',
-        'L2': 'first the person carries a distractor across the robot\'s way (back afterwards) and takes another one in '
-              'her hand; when the robot grasps its first block she brings it onto the spot (1.1 m/s): it is moving '
-              'while the robot carries its block there; if the robot parks its block, she stacks a distractor on the '
-              'parked one',
+        'L2': 'first the person carries a distractor across the robot\'s way and back; when '
+              'the robot grasps its first block she puts another distractor onto the spot (1.1 m/s); if the robot '
+              'parks its block, she stacks a distractor on the parked one',
     }
 
     def setup_episode(self, rng: np.random.Generator) -> None:
@@ -110,17 +109,15 @@ class DynStackBlocksGoalTaken(DynamicBenchTask, StackBlocks):
                 self.start_obstacle(self.job_move_item(self.obstacle, self.on_goal, name='block_on_goal', speed=1.1))
             elif self.level == 'L2':
                 if t >= 0.2:
-                    if self.traffic_blocks:
-                        self.start_traffic(self.traffic_blocks, self.first.get_position(), self.goal, speed=0.9,
-                                           stay_clear=[(self.goal, 0.10)])
+                    if self.traffic_blocks and self.start_traffic(self.traffic_blocks, self.first.get_position(),
+                                                                  self.goal, speed=0.9, stay_clear=[(self.goal, 0.13)]):
+                        self.finish_traffic(0.5)        # and back: it may be the block she stacks on a parked one
                     else:
                         self._traffic_tried = 4
-                    self.get_ready(self.obstacle)
                 if held is not None:
                     # the stacking spot is a 5 cm platform: the block is carried onto it (it cannot be slid up)
                     self.start_obstacle(self.job_move_item(self.obstacle, self.on_goal, name='block_on_goal',
                                                            speed=1.0))
-                    self.finish_traffic(pause=0.5)
         if self.level == 'L2':
             self._flagship(t, held)
         self._held_prev = held
@@ -143,9 +140,11 @@ class DynStackBlocksGoalTaken(DynamicBenchTask, StackBlocks):
                 self.log_event('parked_block_regrasped_before_second')
             elif settled and not self.tip_near(pos, 0.06) and not self.person.busy:
                 choice = self._choose_second(self.parked)
-                if choice is None:
+                if choice is None and any(w in ('by the robot', 'by the gripper') for w in self._why_not.values()):
+                    pass                                # a block is there once the robot has moved away: wait
+                elif choice is None:
                     self.park_phase = 'second_impossible'
-                    self.log_event('second_blocker_impossible')
+                    self.log_event('second_blocker_impossible', why=self._why_not)
                 else:
                     self.second, on_top = choice
                     self.second_job = self.submit(self.job_move_item(self.second, on_top, name='stack_on_parked',
@@ -162,22 +161,34 @@ class DynStackBlocksGoalTaken(DynamicBenchTask, StackBlocks):
 
     def _choose_second(self, parked) -> Optional[tuple]:
         """A block for the person to stack on the parked one: a distractor standing free within her reach (not the
-        one on the spot), with the pose on top of the parked block."""
+        one on the spot, not by the robot), with the pose on top of the parked block."""
         top = world_aabb(parked)[1][2]
         pos = parked.get_position()
         on_top = np.array([pos[0], pos[1], top + 0.002])
         p = self.person
+        self._why_not = {}
         if p.reach_lean(p.palm_above(top + BLOCK + 0.005, pos[:2])) is None:
+            self._why_not['parked'] = 'out of her reach'
             return None
         cands = [s for s in self.distractors if s.get_handle() != self.obstacle.shape.get_handle()]
         cands.sort(key=lambda s: np.linalg.norm(s.get_position()[:2] - p.palm_world()[:2]))
         for s in cands:
             sp = s.get_position()
+            why = self._why_not.__setitem__
             if self._on_goal(sp, 0.03) or abs(sp[2] - (TABLE_Z + 0.5 * BLOCK)) > 0.01 or self.is_grasped(s):
+                why(s.get_name(), 'not standing free')
                 continue
             if p.reach_lean(p.palm_above(sp[2] + 0.5 * BLOCK, sp[:2])) is None:
+                why(s.get_name(), 'out of her reach')
                 continue
             if np.linalg.norm(sp[:2] - self.tip_position()[:2]) < 0.15:
+                why(s.get_name(), 'by the gripper')
+                continue
+            # not by the robot's body either (e.g. the block she carried across, left on the robot's side): she would
+            # have to reach in front of the robot and wait for it
+            if np.linalg.norm(sp[:2] - ROBOT_BASE_XY) < 0.40 or any(
+                    np.linalg.norm(sp[:2] - np.asarray(j.get_position())[:2]) < 0.15 for j in self.robot.arm.joints):
+                why(s.get_name(), 'by the robot')
                 continue
             obj = self.task_object(s)
             obj.rewrap()

@@ -166,6 +166,7 @@ class DynamicBenchTask(object):
     REMEDIES: Tuple[str, ...] = ()  # what the robot is expected to do about it (the skills the task asks for)
     LEVEL_NOTES: Dict[str, str] = {}
     SAFETY_FLAGS: Tuple[str, ...] = ()   # task metrics that make an episode unsafe besides the generic ones
+    MAY_TOPPLE: Tuple[str, ...] = ()     # item kinds the remedy topples on purpose (not a side effect)
     OBSTACLE: str = ''              # what the obstacle is
     KEYFRAME_SEGMENT: str = ''      # which static keyframe / segment it gets in the way of
 
@@ -223,8 +224,10 @@ class DynamicBenchTask(object):
         from rlbench.dynamic_bench.assets import remove_named
         from pyrep.const import PrimitiveShape
         remove_named('dynbench_floor')
-        self.floor = Shape.create(type=PrimitiveShape.CUBOID, size=[6.0, 6.0, 0.5], position=[0.0, 0.0, -0.25],
-                                  static=True, respondable=True, renderable=False)     # thick: no tunnelling
+        # very thick: at RLBench's 50 ms step a falling object goes 15 cm into it in one step, and Bullet pushes it
+        # out through the nearest face (the bottom one of a thinner floor)
+        self.floor = Shape.create(type=PrimitiveShape.CUBOID, size=[6.0, 6.0, 4.0], position=[0.0, 0.0, -2.0],
+                                  static=True, respondable=True, renderable=False)
         self.floor.set_name('dynbench_floor')
         self.person = Person(self)
         self.build_scene()
@@ -738,7 +741,8 @@ class DynamicBenchTask(object):
         for name, it in list(self.items.items()) + [(to.name, to) for to in self.task_objects.values()]:
             if it.hidden or it.state != 'passive' or name not in touched or it.shape.get_name() in self._robot_grasped:
                 continue
-            if it.tilt() - self._tilt_at_contact.get(name, 0.0) > TOPPLE_ANGLE:
+            if it.tilt() - self._tilt_at_contact.get(name, 0.0) > TOPPLE_ANGLE and \
+                    getattr(it, 'kind', None) not in self.MAY_TOPPLE:
                 toppled.append(name)
             if it.position()[2] < OFF_TABLE_Z:
                 fell.append(name)
@@ -951,17 +955,19 @@ class DynamicBenchTask(object):
             self._ready_job = self.submit(self.job_pick_up(item, name='get_ready', grip=grip))
 
     def job_slide(self, item, to_xy, name: str = 'slide', speed: float = 0.5, slide_speed: float = 0.15,
-                  hold: float = 0.0, after: Optional[Callable] = None) -> Job:
-        """The person puts the hand on the item and slides it along the surface it stands on to to_xy (what is in the
-        way is pushed). The item is held while it slides (kinematic, 'carried'), a free body once let go."""
+                  hold: float = 0.0, after: Optional[Callable] = None, grip_offset=(0.0, 0.0)) -> Job:
+        """The person puts the hand on the item and slides it along the surface it stands on until its centre is at
+        to_xy (what is in the way is pushed). The item is held while it slides (kinematic, 'carried'), a free body once
+        let go. grip_offset: where the hand goes, from the item's centre (world x, y; the item does not turn)."""
         p = self.person
+        off = np.asarray(grip_offset, dtype=np.float64)[:2]
 
         def on_top():
-            return p.palm_above(item.top_z(), item.position()[:2])
+            return p.palm_above(item.top_z(), item.position()[:2] + off)
 
         def end():
             q = on_top()
-            return np.array([to_xy[0], to_xy[1], q[2]])
+            return np.array([to_xy[0] + off[0], to_xy[1] + off[1], q[2]])
         steps = [Move(lambda: on_top() + [0.0, 0.0, 0.08], speed),
                  Move(on_top, 0.5 * speed, direct=True),
                  Grab(item),
@@ -986,7 +992,9 @@ class DynamicBenchTask(object):
             steps.append(Call(after))
         steps.append(Move(lambda: self.person.palm_world() + [0.0, 0.0, 0.10], 0.5 * speed, direct=True,
                           wait_for_robot=False))
-        return Job(name, steps)
+        job = Job(name, steps)
+        job.after_contact = 'withdraw'          # touched by the robot, she does not put the hand back there
+        return job
 
     # ----------------------------------------------------------------------------------------------------------------
     # The obstacle of a task: common bookkeeping (a task sets self.obstacle and defines obstacle_in_way)
@@ -1046,8 +1054,9 @@ class DynamicBenchTask(object):
             if far is None:
                 continue
             self._traffic_item = (item, item.position(), grip, speed)
-            self.traffic.append(self.submit(self.job_move_item(item, far, name='traffic_out', speed=speed,
-                                                               grip=grip)))
+            job = self.job_move_item(item, far, name='traffic_out', speed=speed, grip=grip)
+            job.patience = 30.0                     # things carried across: she is in no hurry
+            self.traffic.append(self.submit(job))
             self.log_event('traffic_crossing', item=item.name, to=[round(float(x), 3) for x in far])
             return True
         if self._traffic_tried >= 4:
@@ -1060,8 +1069,9 @@ class DynamicBenchTask(object):
             return
         item, home, grip, speed = self._traffic_item
         self._traffic_item = None
-        self.traffic.append(self.submit(self.job_move_item(item, home, name='traffic_back', speed=speed, grip=grip,
-                                                           wait_before=pause)))
+        job = self.job_move_item(item, home, name='traffic_back', speed=speed, grip=grip, wait_before=pause)
+        job.patience = 30.0
+        self.traffic.append(self.submit(job))
 
     def obstacle_metrics(self) -> dict:
         if not self.obstacle_kind:

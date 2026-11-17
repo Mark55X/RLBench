@@ -46,14 +46,14 @@ REST_SPEED = 0.03          # [m/s]
 SCENARIOS: Dict[str, List[str]] = {
     'dyn_stack_blocks_goal_taken': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
     'dyn_close_jar_item_in_path': ['obstacle_coming', 'obstacle_placed'],
-    'dyn_shape_sorter_book_on_hole': ['obstacle_coming', 'obstacle_placed', 'shape_parked', 'obstacle_cleared'],
+    'dyn_shape_sorter_tablet_on_hole': ['obstacle_coming', 'obstacle_placed', 'shape_parked', 'obstacle_cleared'],
     'dyn_place_wine_bottle_in_path': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
     'dyn_put_groceries_grasp_blocked': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
     'dyn_slide_block_obstacle_in_path': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
     'dyn_insert_peg_hand_in_way': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
     'dyn_stack_blocks_tunnel': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
-    'dyn_slide_block_target_taken': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
-    'dyn_slide_block_book_across': ['obstacle_coming', 'obstacle_placed'],
+    'dyn_shape_sorter_box_over_shape': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
+    'dyn_slide_block_board_pinned': ['obstacle_coming', 'obstacle_placed', 'obstacle_cleared'],
 }
 SCENARIOS_L2: Dict[str, List[str]] = {
     'dyn_stack_blocks_goal_taken': ['traffic_crossing', 'block_parked', 'second_blocker_coming'],
@@ -203,15 +203,13 @@ def check_static(env, name: str, level: str, seed: int, idle_s: float = 20.0) ->
     m = task.dynbench_metrics()
     if level in ('L0', 'L1'):
         ok = m.get('obstacle_placed', False)
-        if name not in HAND_TASKS or level == 'L0':
+        if name not in HAND_TASKS:          # (a hand leaves by itself, also at L0)
             ok = ok and m.get('obstacle_in_way_at_end', False)
         ck['obstacle'] = bool(ok)
         if not ok:
             res['notes'].append(f'obstacle not in the way: phase {m.get("script_phase")}')
-    elif level == 'L2' and name in TRAFFIC:
-        ck['obstacle'] = any(e['event'] == 'traffic_crossing' for e in m['events'])
-        if not ck['obstacle']:
-            res['notes'].append('no traffic across the robot\'s way')
+    # (L2: the obstacle and the traffic come on the robot's progress: with a still robot nothing is expected; the
+    # blind and the scripted runs check them)
     if level in ('L1', 'L2'):
         ck['idle_safe'] = not m['collided']
         if m['collided']:

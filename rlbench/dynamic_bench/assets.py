@@ -52,6 +52,13 @@ SPECS: Dict[str, dict] = {
     'small_book': dict(file='small_book', mass=0.20, collision='box'),
     # the toy tunnel of the first DynamicDrema tests (lying on its side in its source model): roof up, open along x
     'tunnel': dict(file='tunnel', mass=0.30, euler=(0.0, -np.pi / 2, 0.0)),
+    # built from simple shapes (no model): size [m] (x, y, z standing), colour
+    # a tablet: a thin plate, too wide for the gripper and too thin to be pushed by its edge
+    'tablet': dict(build='slab', size=(0.24, 0.17, 0.007), mass=0.45, color=(0.12, 0.12, 0.14)),
+    # the toy box of the game, upside down (open below): too wide for the gripper, closed on every side
+    'toy_box': dict(build='open_box', size=(0.12, 0.12, 0.13), wall=0.005, mass=0.15, color=(0.85, 0.55, 0.15)),
+    # a long wooden board: too wide for the gripper, too flat to be taken by its edge
+    'board': dict(build='slab', size=(0.32, 0.09, 0.015), mass=0.25, color=(0.72, 0.53, 0.32)),
 }
 
 DAMPING = (0.0, 0.3)
@@ -112,16 +119,20 @@ class Item:
         remove_named(self.name)
         for k in range(12):
             remove_named(f'{self.name}_visual{k if k else ""}')
-        path = os.path.join(ASSET_DIR, spec['file'] + '.ttm')
-        if not os.path.isfile(path):
-            raise FileNotFoundError(f'{path} missing: run python -m rlbench.dynamic_bench.tools.build_assets')
-        self.shape = Shape(pyrep.import_model(path).get_handle())
-        self.shape.set_model(False)
-        self.shape.set_dynamic(False)
-        # standing pose of the model at the world origin
-        m0 = np.eye(4)
-        m0[:3, :3] = _euler_matrix(spec.get('euler', (0.0, 0.0, 0.0)))
-        self.shape.set_matrix(m0)
+        if 'build' in spec:
+            self.shape = _build(spec)                    # standing at the world origin already
+            self.shape.set_dynamic(False)
+        else:
+            path = os.path.join(ASSET_DIR, spec['file'] + '.ttm')
+            if not os.path.isfile(path):
+                raise FileNotFoundError(f'{path} missing: run python -m rlbench.dynamic_bench.tools.build_assets')
+            self.shape = Shape(pyrep.import_model(path).get_handle())
+            self.shape.set_model(False)
+            self.shape.set_dynamic(False)
+            # standing pose of the model at the world origin
+            m0 = np.eye(4)
+            m0[:3, :3] = _euler_matrix(spec.get('euler', (0.0, 0.0, 0.0)))
+            self.shape.set_matrix(m0)
         if spec.get('hollow'):
             self._make_hollow()
         elif spec.get('collision'):
@@ -151,6 +162,8 @@ class Item:
         h = self.shape.get_handle()
         sim.simSetEngineFloatParameter(sim.sim_bullet_body_lineardamping, h, float(damping[0]))
         sim.simSetEngineFloatParameter(sim.sim_bullet_body_angulardamping, h, float(damping[1]))
+        if 'friction' in spec:
+            set_friction(self.shape, spec['friction'])
         self.state = 'hidden'
         self.hide()
 
@@ -383,6 +396,36 @@ class TaskObject(Item):
         if self._was_dynamic:
             self.shape.reset_dynamic_object()
         self.state = 'passive' if self._was_dynamic else 'static'
+
+
+def _build(spec: dict) -> Shape:
+    """A shape built from pure primitives, standing on the world origin: 'slab' (a box), 'open_box' (a box open
+    below: four walls and a top, to stand upside down over something)."""
+    sx, sy, sz = spec['size']
+    color = list(spec.get('color', (0.6, 0.6, 0.6)))
+    if spec['build'] == 'slab':
+        return Shape.create(type=PrimitiveShape.CUBOID, size=[sx, sy, sz], mass=spec['mass'], respondable=True,
+                            static=True, renderable=True, position=[0.0, 0.0, 0.5 * sz], color=color)
+    w = spec.get('wall', 0.005)
+    parts = [((sx, sy, w), (0.0, 0.0, sz - 0.5 * w)),                                   # the top
+             ((w, sy, sz - w), (0.5 * (sx - w), 0.0, 0.5 * (sz - w))),
+             ((w, sy, sz - w), (-0.5 * (sx - w), 0.0, 0.5 * (sz - w))),
+             ((sx - 2 * w, w, sz - w), (0.0, 0.5 * (sy - w), 0.5 * (sz - w))),
+             ((sx - 2 * w, w, sz - w), (0.0, -0.5 * (sy - w), 0.5 * (sz - w)))]
+    shapes = [Shape.create(type=PrimitiveShape.CUBOID, size=list(s), mass=0.02, respondable=True, static=True,
+                           renderable=True, position=list(p), color=color) for s, p in parts]
+    return Shape(sim.simGroupShapes([s.get_handle() for s in shapes]))
+
+
+def set_friction(shape: Shape, friction: float) -> None:
+    """Friction of a shape for Bullet (both parameters CoppeliaSim keeps; Bullet multiplies those of two bodies in
+    contact)."""
+    for p in (sim.sim_bullet_body_oldfriction, sim.sim_bullet_body_friction):
+        sim.simSetEngineFloatParameter(p, shape.get_handle(), float(friction))
+
+
+def get_friction(shape: Shape) -> float:
+    return float(sim.simGetEngineFloatParameter(sim.sim_bullet_body_oldfriction, shape.get_handle()))
 
 
 def remove_tree(obj) -> None:

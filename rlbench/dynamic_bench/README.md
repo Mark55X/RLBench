@@ -28,8 +28,8 @@ No learned policy is needed to run the benchmark: the static keyframes come with
   that moves only because the person, the robot or gravity moves it. Nothing floats, teleports or appears from
   nowhere: the person takes things from where they stand (her own things stand on the table in front of her, in view,
   out of the robot's way) and, if she gives up a job, puts them back.
-- **Moving obstacles for the predictor.** At L2 the obstacle arrives while the robot is on its way to it (triggered by
-  the robot's progress), and the person also carries things across the robot's way and back. Trajectories are NOT an
+- **Moving obstacles for the predictor.** At L2 the obstacle arrives while the robot is executing (triggered by the
+  robot's progress), and the person also carries things across the robot's way and back. Trajectories are NOT an
   input of the robot (it has to predict them) but are recorded as ground truth.
 - **Oracle for what is a free body.** The benchmark says the dynamics class of every body (free or not; a later lab
   setup will have to infer it).
@@ -39,15 +39,22 @@ No learned policy is needed to run the benchmark: the static keyframes come with
 | # | task | RLBench task | obstacle | static keyframes it blocks | ways out |
 |---|---|---|---|---|---|
 | 1 | `dyn_stack_blocks_goal_taken` | `stack_blocks` | a block of another colour (a distractor of the task) on the stacking spot | place keyframes of the first block | push it off (holding the block, or after parking it); park, pick it away, re-grasp; L2: unstack the block the person puts on the parked one |
-| 2 | `dyn_stack_blocks_tunnel` | `stack_blocks` | a toy tunnel (the one of the first DynamicDrema tests) slid by the person along the table, ending up over a block to grasp | above the block -> grasp | slide it off along its opening pushing the roof (the block stays); lift it off; pushed sideways it drags the block |
+| 2 | `dyn_stack_blocks_tunnel` | `stack_blocks` | a toy tunnel (the one of the first DynamicDrema tests) slid by the person along the table, ending up over a block to grasp (only the blocks to stack have the task's colour: no other block can replace it) | above the block -> grasp | slide it off along its opening pushing the roof (the block stays); lift it off; pushed sideways it drags the block |
 | 3 | `dyn_close_jar_item_in_path` | `close_jar` | a tall kitchen item (crackers box, mustard bottle, sugar box) in front of the jar | lid lifted -> above the jar | over or around it; push it low (high: it tips over); park the lid, pick it (mustard by the cap, sugar across its thin side; crackers too wide) |
-| 4 | `dyn_shape_sorter_book_on_hole` | `place_shape_in_shape_sorter` | the person's book lying flat over the target hole | above the hole -> release | slide it off (too wide to grasp), holding the shape or after parking it; L2: wait for her hand to leave the book |
+| 4 | `dyn_shape_sorter_tablet_on_hole` | `place_shape_in_shape_sorter` | the person's tablet lying flat over the target hole (too wide to grasp, too thin to be pushed by its edge) | above the hole -> release | **drag** it off: press on it from above with the closed gripper and move (park the shape first); L2: wait for her hand to leave it |
 | 5 | `dyn_place_wine_bottle_in_path` | `place_wine_at_rack_location` | the person's own bottle (green) standing in front of the rack location | in front of the location -> in the location | stand the own bottle up (lying it rolls), move hers by the neck, re-grasp; push hers low at the base (high: it tips and rolls) |
 | 6 | `dyn_put_groceries_grasp_blocked` | `put_groceries_in_cupboard` | another grocery item of the scene against the target, where a finger of the grasp comes down (on its top for a tall target) | above the item -> grasp | pick it away or push it; drag the target out of the gap |
 | 7 | `dyn_slide_block_obstacle_in_path` | `slide_block_to_color_target` | the person's mug or book in the way of the pushed block | behind the block -> pushed onto the target | stop, take it away (pick the mug, push the book), resume; push the block around it; pushing on shoves it along (a mug tips over) |
-| 8 | `dyn_slide_block_target_taken` | `slide_block_to_color_target` | the person's mug on the coloured target square | pushed onto the target | take the mug away (by the rim) or push it off, then push; pushing on shoves it off (it tips over) |
-| 9 | `dyn_slide_block_book_across` | `slide_block_to_color_target` | the person's book slid across the table through the block's way (L2: across and back) | behind the block -> pushed onto the target | predict it and let it pass; if it stops in the way push it aside or push the block around it |
-| 10 | `dyn_insert_peg_hand_in_way` | `insert_onto_square_peg` | the person's hand resting on the board next to the target spoke | above the spoke -> release | wait until it has gone (it must not be touched); at L0 (it stays) insert carefully, clear of it |
+| 8 | `dyn_shape_sorter_box_over_shape` | `place_shape_in_shape_sorter` | the toy box of the game upside down over the shape to grasp (too wide to grasp, closed on every side) | above the shape -> grasp | **topple** it: push it high on one side, following its edge as it tips about the opposite bottom edge (slid or pushed low it drags the shape along); then grasp |
+| 9 | `dyn_slide_block_board_pinned` | `slide_block_to_color_target` | a long board across the block's way, one end held down by the person's book (too wide to grasp) | behind the block -> pushed onto the target | **rotate** it about the end under the book (push its free end along an arc) until it lies beside the way; slid lengthwise it drags the book |
+| 10 | `dyn_insert_peg_hand_in_way` | `insert_onto_square_peg` | the person's hand resting on the top of the target spoke | above the spoke -> release | **wait** until it has gone (it must not be touched); L2: predict it coming back |
+
+What each task needs, beyond following the keyframes: pushing (2, 7, 1), picking and placing elsewhere (1, 5, 6, 7),
+going around (3), waiting / predicting (10, and the L2 of every task), dragging (4), toppling (8), rotating (9). Every
+task leaves other ways open (the column "ways out"): the benchmark measures the outcome and the side effects, not
+which primitive was used. In tasks 4, 8 and 9 the simpler ways are physically ruled out (too wide to grasp, too thin to
+push by the edge, closed on every side, held down at one end); in task 4 the sorter's plastic has a friction of 0.3 (RLBench leaves it at a
+rubber-like 0.71 / 0.5, on which nothing pressed from above can be dragged with the Panda's fingers, 0.5).
 
 `tools/describe.py` prints the table and the level notes from the classes. The seven RLBench tasks used are all in the
 BridgeVLA++ training set (18 RLBench tasks); some carry two or three different situations.
@@ -59,7 +66,7 @@ BridgeVLA++ training set (18 RLBench tasks); some carry two or three different s
 | `off` | the original static task |
 | `L0` | **static obstacle**: there from the start, it does not move (the static keyframes still ignore it) |
 | `L1` | **obstacle after the decision**: right after the start the person puts it in the way (her own things she already holds, just picked up from her side of the table; the task's own objects she takes from where they stand; peak hand speed 1-1.1 m/s); it is at rest when the robot gets there |
-| `L2` | **moving obstacles**: the obstacle arrives while the robot is on its way to it (triggered by the robot's progress, 1 m/s), and the person carries things across the robot's way and back (tasks 1, 3, 5); task 1: a block stacked on the parked one; task 2: the tunnel covers a later grasp while the robot carries the first block; task 4: her hand stays on the book 4 s; task 9: the book goes across and back; task 10: the hand fidgets, leaves and comes back |
+| `L2` | **moving obstacles**: the obstacle arrives while the robot is executing (triggered by the robot's progress, 1 m/s), and the person carries things across the robot's way and back (tasks 1, 3, 5); task 1: a block stacked on the parked one; task 2: the tunnel covers a later grasp while the robot carries the first block; task 4: her hand stays on the tablet 2.5 s; task 8: the box comes down while the gripper approaches; task 9: the board slides towards the block while the robot comes; task 10: the hand fidgets, leaves and comes back |
 
 Set it with `set_level('L1')` or the environment variable `DYNBENCH_LEVEL`.
 

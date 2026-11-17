@@ -8,7 +8,9 @@ The static keyframes are drawn on the frames (numbered circles; the next one to 
 task, level, part, time, the events of the scene as they happen, a CONTACT mark when the robot touches the person.
 
     # render the clips (one process per task, in parallel), then assemble them
-    python -m rlbench.dynamic_bench.tools.make_video render dyn_close_jar_item_in_path --level L2 --seed 0 --out clips/
+    # (one process per part: a fresh simulator for each episode)
+    python -m rlbench.dynamic_bench.tools.make_video render dyn_close_jar_item_in_path --level L2 --parts A --out clips/
+    python -m rlbench.dynamic_bench.tools.make_video render dyn_close_jar_item_in_path --level L2 --parts B --out clips/
     python -m rlbench.dynamic_bench.tools.make_video assemble --clips clips/ --out dynbench.mp4
 """
 
@@ -37,9 +39,10 @@ EVENT_TEXT = {
     'block_parked': 'the robot parks its block',
     'second_blocker_coming': 'the person stacks a block on the parked one',
     'parked_block_covered': 'the parked block is covered: it must be unstacked',
-    'shape_parked': 'the robot parks the shape',
+    'shape_parked': 'the robot lets go of the shape (not in the hole)',
     'keyframe_reached': 'static keyframe reached',
     'person_flinches': 'touched by the robot: the person pulls back',
+    'person_withdraws': 'touched by the robot: the person keeps her hand away',
     'person_waits_for_robot': 'the person waits for the robot to move away',
     'person_pauses': 'the gripper is close: the person stops',
     'person_gives_up': 'the person gives up',
@@ -61,19 +64,18 @@ CARDS = {
         'roof. At L2 it slides over the second block while the robot carries the first one.',
         'slide the tunnel off along its opening by pushing its roof (the block stays); lift it off by a wall; pushing '
         'it sideways drags the block along.'),
-    'dyn_slide_block_target_taken': (
-        'Mug on the target',
-        'The person puts her mug down on the coloured target square, where the push keyframe brings the block. At L2 '
-        'it comes while the block is being pushed.',
-        'take the mug away (by the rim) or push it off, then push the block on; pushing on regardless shoves the mug '
-        'off the target (it tips over).'),
-    'dyn_slide_block_book_across': (
-        'Book slid across the push',
-        'The person slides her book across the table, through the way the block is pushed along: a moving obstacle '
-        'on the table, at the robot\'s height. At L1 it stops in the way; at L2 it goes across and back while the '
-        'block is being pushed.',
-        'predict it: hold the push, let it pass, push on; if it stops in the way, push it aside or push the block '
-        'around it.'),
+    'dyn_shape_sorter_box_over_shape': (
+        'Box over the shape',
+        'The person turns the toy box of the game upside down over the shape the robot has to grasp: the shape is '
+        'still there, but the grasp from above hits the box. At L2 it comes down while the gripper approaches.',
+        'TOPPLE the box: push it high on one side, following its edge as it tips over (too wide to grasp; slid or '
+        'pushed low it drags the shape along inside it); then grasp as decided.'),
+    'dyn_slide_block_board_pinned': (
+        'Board across the push, held by a book',
+        'The person lays a long board across the way the block is pushed along and puts her book on one end. At L2 '
+        'she slides it in while the block is being pushed.',
+        'ROTATE the board about the end under the book (push its free end along an arc) until it lies beside the '
+        'way (too wide to grasp; slid lengthwise it drags the book along); then push the block on.'),
     'dyn_close_jar_item_in_path': (
         'Kitchen item on the lid\'s way',
         'The person sets a tall kitchen item (crackers box, mustard bottle, sugar box) down in front of the jar, on the '
@@ -81,12 +83,12 @@ CARDS = {
         'soup can is carried across.',
         'carry the lid over or around it; push it low (pushed high it tips over); park the lid and pick it away '
         '(mustard by the cap, sugar box across its thin side; the crackers box is too wide).'),
-    'dyn_shape_sorter_book_on_hole': (
-        'Book on the hole',
-        'The person lays her book flat on the shape sorter, over the target hole: the release keyframe is now above '
-        'the book. At L2 she keeps her hand on it for 4 s.',
-        'slide the book off (too wide to grasp), holding the shape or after parking it; at L2 wait for the hand '
-        'first.'),
+    'dyn_shape_sorter_tablet_on_hole': (
+        'Tablet on the hole',
+        'The person lays her tablet flat on the shape sorter, over the target hole: the release keyframe is now above '
+        'the tablet. At L2 she lays it there while the robot goes for the shape, and keeps her hand on it for 2.5 s.',
+        'DRAG the tablet off the hole: press on it from above with the closed gripper and move (too wide to grasp, too '
+        'thin to be pushed by its edge); park the shape first; at L2 wait for the hand.'),
     'dyn_place_wine_bottle_in_path': (
         'Bottle in front of the rack',
         'The person stands her own bottle (green) in front of the rack location, where the robot\'s bottle has to be '
@@ -108,19 +110,18 @@ CARDS = {
         'stop, take the obstacle away (pick the mug, push the book aside), resume; or push the block around it; '
         'pushing on regardless shoves it along (a mug tips over).'),
     'dyn_insert_peg_hand_in_way': (
-        'Hand next to the spoke',
-        'The person rests her hand on the board next to the target spoke, where the ring has to come down. A hand '
-        'is not an object: it cannot be pushed and must not be touched. At L2 it fidgets, leaves and comes back.',
-        'wait until the hand has gone; at L0 (the hand stays) insert carefully from above, clear of it.'),
+        'Hand on the spoke',
+        'The person rests her hand on the top of the target spoke, right where the ring has to come down. A hand is '
+        'not an object: it cannot be pushed and must not be touched. At L2 it comes when the robot has the ring, '
+        'fidgets, leaves and comes back.',
+        'WAIT until the hand has gone (and predict it coming back at L2), keeping the ring away from it.'),
 }
 
 LEVELS_TEXT = [
-    ('off', 'the original static RLBench task (no person, no obstacle).'),
-    ('L0', 'static obstacle: it is there from the start and does not move.'),
-    ('L1', 'obstacle after the decision: right after the start the person puts it in the way (her own things she '
-           'already holds); it is at rest when the robot gets there.'),
-    ('L2', 'moving obstacles: the obstacle arrives while the robot is on its way to it (triggered by the robot\'s '
-           'progress), and the person also carries things across the robot\'s way.'),
+    ('off', 'the original static RLBench task.'),
+    ('L0', 'the obstacle is there from the start, still.'),
+    ('L1', 'right after the start the person puts it in the way; it is still when the robot gets there.'),
+    ('L2', 'it arrives while the robot is executing, and things are carried across the robot\'s way.'),
 ]
 
 PART_TEXT = {'A': '(A) static keyframes, executed blind', 'B': '(B) one possible remedy (scripted, same keyframes)'}
@@ -138,9 +139,9 @@ def _font(size, bold=False):
 def camera_for(task):
     """Eye and look-at: across the table from the person (she faces the camera), the robot at the side."""
     side = task.person.side if not task.person.hidden else -1
-    if task.BASE_TASK == 'put_groceries_in_cupboard':
-        return (0.05, -1.30 * side, 1.45), (0.30, 0.02 * side, 0.92)
-    return (0.25, -1.30 * side, 1.60), (0.30, 0.02 * side, 0.84)
+    if task.BASE_TASK == 'put_groceries_in_cupboard':      # under the cupboard
+        return (0.10, -1.45 * side, 1.55), (0.30, 0.20 * side, 0.98)
+    return (0.30, -1.45 * side, 1.95), (0.32, 0.20 * side, 0.95)
 
 
 def project(cam_matrix, points):
@@ -173,8 +174,10 @@ def _overlay(img, ctx, t, events, contact, kf_px, kf_next):
         d.ellipse([u - r, v - r, u + r, v + r], outline=colour, width=3)
         d.text((u + r + 2, v - r - 4), str(k + 1), font=_font(18, True), fill=colour)
     d.rectangle([0, 0, W, 60], fill=(0, 0, 0, 165))
-    d.text((18, 6), f'{ctx["index"]}/{ctx["total"]}  {CARDS[ctx["name"]][0]}   -   {PART_TEXT[ctx["part"]]}',
-           font=_font(24, True), fill=(255, 255, 255, 255))
+    head = f'{ctx["index"]}/{ctx["total"]}  {CARDS[ctx["name"]][0]}'
+    if ctx.get('label_part', True):
+        head += f'   -   {PART_TEXT[ctx["part"]]}'
+    d.text((18, 6), head, font=_font(24, True), fill=(255, 255, 255, 255))
     d.text((18, 37), f'{ctx["name"]}   (RLBench task: {ctx["base"]})   level {ctx["level"]}   '
                      f'static keyframe {min(kf_next + 1, len(kf_px))}/{len(kf_px)}', font=_font(15),
            fill=(210, 210, 210, 255))
@@ -196,12 +199,26 @@ def _card(lines, sub=None):
     from PIL import Image, ImageDraw
     im = Image.new('RGB', (W, H), (18, 24, 33))
     d = ImageDraw.Draw(im)
-    y = 110
+
+    def layout(k):
+        """Text height with the font sizes scaled by k."""
+        y = 0
+        for text, size, _, _ in lines:
+            sz = max(12, int(size * k))
+            y += len(textwrap.wrap(text, width=int(1950 / sz))) * int(sz * 1.32) + int(sz * 0.55)
+        return y
+    # the text fits between the top margin and the subtitle: smaller fonts if needed
+    room = H - (90 if sub else 40) - 70
+    k = 1.0
+    while layout(k) > room and k > 0.5:
+        k -= 0.05
+    y = max(50, (H - (90 if sub else 40) - layout(k)) // 2) if layout(k) < room * 0.7 else 70
     for text, size, bold, colour in lines:
-        for line in textwrap.wrap(text, width=int(1950 / size)):
-            d.text((80, y), line, font=_font(size, bold), fill=colour)
-            y += int(size * 1.32)
-        y += int(size * 0.55)
+        sz = max(12, int(size * k))
+        for line in textwrap.wrap(text, width=int(1950 / sz)):
+            d.text((80, y), line, font=_font(sz, bold), fill=colour)
+            y += int(sz * 1.32)
+        y += int(sz * 0.55)
     if sub:
         d.text((80, H - 60), sub, font=_font(17), fill=(150, 160, 175))
     return np.asarray(im)
@@ -266,7 +283,7 @@ def render_part(te, task, demo, kfs, part, ctx, clip_dir, tail, seed):
     else:
         from rlbench.dynamic_bench.tools.scripted import ScriptedRobot, Timeout
         from rlbench.dynamic_bench.tools.solve import SOLVERS
-        rb = ScriptedRobot(te, max_steps=3000)
+        rb = ScriptedRobot(te, max_steps=4000, log=lambda s: print(s, flush=True))     # as tools/audit.py
         try:
             SOLVERS[ctx['name']](rb, task, kfs, np.random.default_rng(seed))
         except Timeout:
@@ -286,14 +303,17 @@ def render_part(te, task, demo, kfs, part, ctx, clip_dir, tail, seed):
             'events': [e['event'] for e in task.event_log]}
 
 
-def render(name, level, seed, out_dir, tail):
+def render(name, level, seed, out_dir, tail, parts=('A', 'B')):
+    """Renders the parts of a task's clip; run each part in its own process (a fresh simulator per episode, as an
+    evaluation does): clip_A.json / clip_B.json."""
     from rlbench.dynamic_bench import TASKS, get_task_class, set_level
     from rlbench.dynamic_bench.keyframes import keyframes_from_demo, record_static_demo
     from rlbench.dynamic_bench.tools.common import make_env
     clip_dir = os.path.join(out_dir, name)
     os.makedirs(clip_dir, exist_ok=True)
-    for f in glob.glob(os.path.join(clip_dir, '*.jpg')):
-        os.remove(f)
+    for part in parts:
+        for f in glob.glob(os.path.join(clip_dir, part + '*.jpg')):
+            os.remove(f)
     env = make_env()
     set_level(level)
     te = env.get_task(get_task_class(name))
@@ -304,14 +324,14 @@ def render(name, level, seed, out_dir, tail):
     demo = record_static_demo(te)
     kfs = keyframes_from_demo(demo)
     ctx = {'name': name, 'base': task.BASE_TASK, 'level': level, 'index': list(TASKS).index(name) + 1,
-           'total': len(TASKS)}
-    info = {'name': name, 'level': level, 'seed': seed, 'keyframes': kfs}
-    for part in ('A', 'B'):
-        info[part] = render_part(te, task, demo, kfs, part, ctx, clip_dir, tail, seed)
+           'total': len(TASKS), 'label_part': list(parts) != ['A']}      # (a video of the blind runs only: no label)
+    for part in parts:
+        info = {'name': name, 'level': level, 'seed': seed, 'keyframes': kfs,
+                part: render_part(te, task, demo, kfs, part, ctx, clip_dir, tail, seed)}
+        info['description'] = info[part]['description']
         print(part, json.dumps({k: v for k, v in info[part].items() if k != 'events'}), flush=True)
-    info['description'] = info['A']['description']
-    with open(os.path.join(clip_dir, 'clip.json'), 'w') as f:
-        json.dump(info, f, indent=1)
+        with open(os.path.join(clip_dir, f'clip_{part}.json'), 'w') as f:
+            json.dump(info, f, indent=1)
     env.shutdown()
 
 
@@ -319,7 +339,7 @@ def render(name, level, seed, out_dir, tail):
 # assembling
 # ---------------------------------------------------------------------------------------------------------------------
 
-def assemble(clips_dir, out, card_seconds):
+def assemble(clips_dir, out, card_seconds, parts=('A', 'B')):
     import imageio
     from PIL import Image
     from rlbench.dynamic_bench import TASKS, get_task_class
@@ -327,32 +347,34 @@ def assemble(clips_dir, out, card_seconds):
     n_card = int(card_seconds * FPS)
     infos = {}
     for name in TASKS:
-        clip = os.path.join(clips_dir, name, 'clip.json')
-        if os.path.exists(clip):
-            infos[name] = json.load(open(clip))
+        clips = [os.path.join(clips_dir, name, f'clip_{p}.json') for p in parts]
+        if all(os.path.exists(c) for c in clips):
+            info = json.load(open(clips[0]))
+            for p, c in zip(parts, clips):
+                info[p] = json.load(open(c))[p]
+            infos[name] = info
+    with_b = 'B' in parts
     level = next(iter(infos.values()))['level'] if infos else 'L2'
     intro = _card([
         ('Dynamic benchmark on RLBench', 46, True, (255, 255, 255)),
         ('Obstacles that come up AFTER a keyframe policy has decided.', 28, True, (255, 215, 90)),
-        ('The tasks are RLBench tasks BridgeVLA++ is trained on, unchanged. Their static keyframes are those of the '
-         'static demo of the same episode (PerAct keypoint discovery): what a keyframe policy decides a priori, on the '
+        ('The tasks are RLBench tasks. Their static keyframes are those of the '
+         'static demo of the same episode: what a keyframe policy decides a priori, on the '
          'scene before anything changes. Then a person seated at the table puts things in the robot\'s way: between '
          'two keyframes, on a keyframe target, or carried across the way. The keyframes stay valid; what is tested is '
          'the layer that moves the robot between them.', 23, False, (210, 215, 225)),
         ('The person (CoppeliaSim\'s seated human model) is the only agent. Every object obeys physics: it moves only '
-         'when the person, the robot or gravity moves it. Obstacles belong to the scene of the task (another block of '
-         'the game, a kitchen item, the person\'s own bottle or book, another grocery item, her hand).', 21, False,
+         'when the person, the robot or gravity moves it.', 21, False,
          (190, 200, 215))], sub='rlbench/dynamic_bench')
     levels = _card([('Levels', 44, True, (255, 255, 255))] +
                    [(f'{k}:  {v}', 25, k == level, (255, 215, 90) if k == level else (215, 220, 230))
                     for k, v in LEVELS_TEXT] +
-                   [(f'This video: level {level}, real simulation speed. For every task:', 24, True, (255, 255, 255)),
-                    ('(A) the static keyframes executed blind: the static demo\'s joint trajectory replayed open loop, '
-                     'as planned on the static scene. Numbered circles: the static keyframes (yellow: the next one).',
-                     22, False, (210, 215, 225)),
-                    ('(B) one possible remedy: a scripted robot with privileged state follows the SAME keyframes and '
-                     'deals with the obstacle between them. It shows the scenario can be solved; it is not a '
-                     'baseline.', 22, False, (210, 215, 225))])
+                   [(f'This video: level {level}, real simulation speed.', 24, True, (255, 255, 255)),
+                    ('The robot executes the static keyframes as planned on the static scene, without looking: '
+                     'what a keyframe policy alone does.' if not with_b else
+                     '(A) the static keyframes executed blind, as planned on the static scene.  (B) one possible '
+                     'remedy: a scripted robot follows the SAME keyframes and deals with the obstacle between them.',
+                     22, False, (210, 215, 225))])
     for card in (intro, levels):
         for _ in range(int(1.8 * n_card)):
             writer.append_data(card)
@@ -368,15 +390,17 @@ def assemble(clips_dir, out, card_seconds):
         card = _card([(f'{i}/{len(TASKS)}  {title}', 42, True, (255, 255, 255)),
                       (f'{name}   (RLBench task: {cls.BASE_TASK}, level {info["level"]}, '
                        f'{len(info["keyframes"])} static keyframes)', 19, False, (150, 170, 200)),
-                      (what, 26, False, (225, 228, 235)),
-                      ('Ways to deal with it: ' + ways, 24, True, (255, 215, 90)),
-                      (f'Level {info["level"]}: ' + cls.LEVEL_NOTES.get(info['level'], ''), 20, False,
+                      (what, 26, False, (225, 228, 235))] +
+                     ([('Ways to deal with it: ' + ways, 24, True, (255, 215, 90))] if with_b else []) +
+                     [(f'Level {info["level"]}: ' + cls.LEVEL_NOTES.get(info['level'], ''), 20, False,
                        (190, 200, 215)),
                       ('Instruction (as in the static task): "' + info['description'] + '"', 19, False,
-                       (170, 180, 195))], sub=f'{cls.CATEGORY}  -  keyframes: {cls.KEYFRAME_SEGMENT}')
+                       (170, 180, 195))],
+                     sub=f'{cls.CATEGORY if with_b else cls.CATEGORY.split(" (")[0]}  -  keyframes: '
+                         f'{cls.KEYFRAME_SEGMENT}')
         for _ in range(n_card):
             writer.append_data(card)
-        for part in ('A', 'B'):
+        for part in parts:
             files = sorted(glob.glob(os.path.join(clips_dir, name, f'{part}*.jpg')))
             for f in files:
                 writer.append_data(np.asarray(Image.open(f)))
@@ -385,14 +409,17 @@ def assemble(clips_dir, out, card_seconds):
     def yn(b):
         return 'yes' if b else 'no'
     lines = [(f'Summary (level {level})', 40, True, (255, 255, 255)),
-             ('A = static keyframes blind: success / obstacle touched by the robot / contacts with the person.   '
-              'B = scripted remedy: success / contacts.', 17, False, (160, 170, 185))]
+             ('Static keyframes executed blind: task success / obstacle touched by the robot / contacts with the '
+              'person' + ('.   B = scripted remedy: success / contacts.' if with_b else '.'), 17, False,
+              (160, 170, 185))]
     for i, title, info in summary:
-        a, b = info['A'], info['B']
-        lines.append((f'{i}. {title}:  A {yn(a["success"])} / {yn(a["obstacle_touched"])} / {a["contacts"]}    '
-                      f'B {yn(b["success"])} / {b["contacts"]}', 19, False, (220, 225, 232)))
+        a = info['A']
+        line = f'{i}. {title}:  {yn(a["success"])} / {yn(a["obstacle_touched"])} / {a["contacts"]}'
+        if with_b:
+            line += f'    B {yn(info["B"]["success"])} / {info["B"]["contacts"]}'
+        lines.append((line, 19, False, (220, 225, 232)))
     end = _card(lines, sub='Scripted remedies check that the scenarios unfold and can be solved; they are not a '
-                           'baseline.')
+                           'baseline.' if with_b else 'rlbench/dynamic_bench')
     for _ in range(int(1.8 * n_card)):
         writer.append_data(end)
     writer.close()
@@ -408,15 +435,17 @@ def main():
     r.add_argument('--seed', type=int, default=0)
     r.add_argument('--tail', type=float, default=3.0)
     r.add_argument('--out', default='dynbench_clips')
+    r.add_argument('--parts', nargs='*', default=['A', 'B'], help='run A and B in separate processes')
     a = sub.add_parser('assemble')
     a.add_argument('--clips', default='dynbench_clips')
     a.add_argument('--out', default='dynbench.mp4')
     a.add_argument('--card_seconds', type=float, default=6.0)
+    a.add_argument('--parts', nargs='*', default=['A', 'B'], help='A: only the static keyframes executed blind')
     args = ap.parse_args()
     if args.cmd == 'render':
-        render(args.task, args.level, args.seed, args.out, args.tail)
+        render(args.task, args.level, args.seed, args.out, args.tail, args.parts)
     else:
-        assemble(args.clips, args.out, args.card_seconds)
+        assemble(args.clips, args.out, args.card_seconds, tuple(args.parts))
 
 
 if __name__ == '__main__':

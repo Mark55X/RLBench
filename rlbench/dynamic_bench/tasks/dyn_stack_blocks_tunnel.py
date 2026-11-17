@@ -1,11 +1,26 @@
 import numpy as np
+from pyrep.objects.proximity_sensor import ProximitySensor
 
+from rlbench.backend.conditions import DetectedSeveralCondition, NothingGrasped
 from rlbench.backend.exceptions import BoundaryError
 from rlbench.dynamic_bench.core import ROBOT_BASE_XY, TABLE_Z, DynamicBenchTask, robot_reachable
 from rlbench.tasks.stack_blocks import StackBlocks
 
 SLIDE = 0.24                 # [m] the tunnel stands this far from the block, along its opening, before it is slid
-INNER_HALF = (0.075, 0.055)  # [m] half length (opening axis) / half width of the tunnel's inside, with a margin
+INNER_HALF = (0.075, 0.055)
+PUSH_FROM = (0.40, 0.64)     # [m] distance from the robot base where the gripper can start a low push comfortably
+
+
+def pushable(xy) -> bool:
+    d = float(np.linalg.norm(np.asarray(xy, dtype=np.float64)[:2] - ROBOT_BASE_XY))
+    return PUSH_FROM[0] <= d <= PUSH_FROM[1]
+
+
+def push_ok(c, d) -> bool:
+    """The roof push along d (from 11.5 cm behind the tunnel's centre c, 20 cm long) starts and ends where the
+    gripper can work low."""
+    c, d = np.asarray(c, dtype=np.float64)[:2], np.asarray(d, dtype=np.float64)[:2]
+    return pushable(c - d * 0.115) and pushable(c + d * 0.085)  # [m] half length (opening axis) / half width of the tunnel's inside, with a margin
 
 
 class DynStackBlocksTunnel(DynamicBenchTask, StackBlocks):
@@ -13,7 +28,8 @@ class DynStackBlocksTunnel(DynamicBenchTask, StackBlocks):
     stack_blocks with a toy tunnel of the same game on the table (the tunnel of the first DynamicDrema tests). After
     the keyframes have been decided the person, tidying up, slides the tunnel along the table and it ends up right
     over a block the robot has to grasp: the block is still there and the keyframes are still right, but the
-    top-down grasp hits the roof. The tunnel is light (0.3 kg) and a free body: it can be slid off along its opening
+    top-down grasp hits the roof. Only the blocks to stack have the task's colour (the other cubes of the game take
+    the distractors' colours): no other block can replace the covered one. The tunnel is light (0.3 kg) and a free body: it can be slid off along its opening
     (the block stays where it is) or lifted off by a wall.
     """
 
@@ -35,6 +51,19 @@ class DynStackBlocksTunnel(DynamicBenchTask, StackBlocks):
 
     def build_scene(self) -> None:
         self.tunnel = self.add_item('tunnel', 'toy_tunnel')
+
+    def init_episode(self, index: int):
+        descriptions = super().init_episode(index)
+        # only the blocks to stack have the colour (the others take the distractors' colours, all the cubes stay):
+        # the covered block cannot be swapped for another one, the tunnel has to go
+        spare = self.target_blocks[self.blocks_to_stack:]
+        for k, b in enumerate(spare):
+            b.set_color(self.distractors[k % len(self.distractors)].get_color())
+        self.register_success_conditions([
+            DetectedSeveralCondition(self.target_blocks[:self.blocks_to_stack], ProximitySensor('stack_blocks_success'),
+                                     self.blocks_to_stack),
+            NothingGrasped(self.robot.gripper)])
+        return descriptions
 
     def setup_episode(self, rng: np.random.Generator) -> None:
         # the block it ends up over: one the robot still has to grasp (L2: not the first, it covers the next grasp
@@ -69,7 +98,7 @@ class DynStackBlocksTunnel(DynamicBenchTask, StackBlocks):
                 continue
             if not (self.item_fits(tn, self.over, a) and self.item_fits(tn, start, a, gap=0.01)):
                 continue
-            if not any(robot_reachable(c[:2] - sgn * u * 0.115, 0.05) for sgn in (1.0, -1.0)):
+            if not any(push_ok(c[:2], sgn * u) for sgn in (1.0, -1.0)):
                 continue
             palms = [p.palm_above(top, start[:2]), p.palm_above(top, c[:2])]
             if not p.choose_seat(palms + [palms[0] + [0, 0, 0.08]], rng):

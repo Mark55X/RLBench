@@ -32,8 +32,9 @@ class DynPutGroceriesGraspBlocked(DynamicBenchTask, PutGroceriesInCupboard):
     LEVEL_NOTES = {
         'L0': 'an item stands against the target from the start',
         'L1': 'right after the start the person moves an item against the target (peak speed 1.1 m/s)',
-        'L2': 'the item comes when the gripper is within 50 cm of the target (1 m/s): it moves in while the robot '
-              'comes down; if a second item fits against the other finger side, it is put there right after the start',
+        'L2': 'right after the start the person moves an item against the target; when the gripper comes within '
+              '35 cm of it, she moves another item against the other finger side (if one fits): it moves in while the '
+              'robot comes down',
     }
 
     def setup_episode(self, rng: np.random.Generator) -> None:
@@ -139,6 +140,7 @@ class DynPutGroceriesGraspBlocked(DynamicBenchTask, PutGroceriesInCupboard):
         return False
 
     def update(self, t: float) -> None:
+        self._second()
         if self.phase != 'waiting' or self.level not in ('L1', 'L2'):
             return
         o, pos, _ = self.blockers[0]
@@ -146,13 +148,18 @@ class DynPutGroceriesGraspBlocked(DynamicBenchTask, PutGroceriesInCupboard):
             self.start_obstacle(self.job_move_item(o, pos, name='item_against_target', speed=1.1,
                                                    grip=self._grip(o)))
         elif self.level == 'L2':
-            if len(self.blockers) > 1 and self.second_job is None and t >= 0.2:
-                o2, pos2, _ = self.blockers[1]
-                self.second_job = self.submit(self.job_move_item(o2, pos2, name='other_side_item', speed=0.9,
-                                                                 grip=self._grip(o2)))
-            if np.linalg.norm(self.tip_position() - self.w_grasp) < 0.50:
-                self.start_obstacle(self.job_move_item(o, pos, name='item_against_target', speed=1.0,
+            if t >= 0.2:
+                self.start_obstacle(self.job_move_item(o, pos, name='item_against_target', speed=1.1,
                                                        grip=self._grip(o)))
+
+    def _second(self) -> None:
+        """L2: the item for the other finger side moves in while the gripper comes down."""
+        if self.level == 'L2' and len(self.blockers) > 1 and self.second_job is None and self.phase != 'waiting' \
+                and np.linalg.norm(self.tip_position() - self.w_grasp) < 0.35:
+            o2, pos2, _ = self.blockers[1]
+            self.second_job = self.submit(self.job_move_item(o2, pos2, name='other_side_item', speed=1.1,
+                                                             grip=self._grip(o2)))
+            self.log_event('second_obstacle_coming', obstacle=o2.name)
 
     def extra_metrics(self) -> dict:
         if not hasattr(self, 'blockers'):

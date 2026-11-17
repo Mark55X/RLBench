@@ -34,9 +34,8 @@ class DynPlaceWineBottleInPath(DynamicBenchTask, PlaceWineAtRackLocation):
         'L0': 'the person\'s bottle stands in front of the rack location from the start',
         'L1': 'the person holds her bottle (taken from her side of the table) and, right after the start, stands it in '
               'front of the location (peak speed 1 m/s)',
-        'L2': 'first the person carries a glass across the robot\'s way (back afterwards) and takes her bottle in her '
-              'hand; when the robot grasps its own bottle she brings hers (1 m/s): it moves in while the robot\'s '
-              'bottle is on its way',
+        'L2': 'as L1, and while the robot carries its bottle the person carries a glass across its way and back '
+              '(moving obstacles)',
     }
 
     def build_scene(self) -> None:
@@ -77,8 +76,7 @@ class DynPlaceWineBottleInPath(DynamicBenchTask, PlaceWineAtRackLocation):
             home = self.place_home(b, rng, self.bottle_yaw, grip='pinch', reach=[drop])
             if self.level == 'L2':
                 self.place_home(self.glass, rng, 0.0, grip='pinch', avoid=[(home, 0.15)], reach=[drop])
-            else:
-                self.ready_in_hand(b, 'pinch')          # L1: she is about to put it down
+            self.ready_in_hand(b, 'pinch')              # she is about to put it down
 
     def obstacle_in_way(self) -> bool:
         """The person's bottle stands where the robot's bottle sweeps between the two keyframes."""
@@ -93,19 +91,15 @@ class DynPlaceWineBottleInPath(DynamicBenchTask, PlaceWineAtRackLocation):
         return bool(near and b.top_z() > self.w_front[2] - HELD_R)
 
     def update(self, t: float) -> None:
-        if self.phase != 'waiting':
-            return
-        if self.level == 'L1' and t >= 0.2:
+        if self.phase == 'waiting' and t >= 0.2:
             self.start_obstacle(self.job_move_item(self.bottle, self.bottle_pos, name='bottle_in_front_of_rack',
                                                    speed=1.0, grip='pinch'))
-        elif self.level == 'L2':
-            if t >= 0.2:
-                self.start_traffic(self.glass, self.w_grasp, self.w_front, grip='pinch',
-                                   stay_clear=[(self.w_grasp, 0.12), (self.bottle_pos, 0.12)])
-                self.get_ready(self.bottle, 'pinch')
-            if self.is_grasped(self.wine_bottle):
-                self.start_obstacle(self.job_move_item(self.bottle, self.bottle_pos, name='bottle_in_front_of_rack',
-                                                       speed=1.0, grip='pinch'))
+        # L2: while the robot carries its bottle, she carries a glass across its way and back
+        if self.level == 'L2' and self.phase != 'coming' and self.is_grasped(self.wine_bottle) and \
+                not self.person.busy:
+            if self.start_traffic(self.glass, self.w_grasp, self.w_front, grip='pinch',
+                                  stay_clear=[(self.w_grasp, 0.12),
+                                              (self.bottle_pos, self.bottle.radius + self.glass.radius + 0.04)]):
                 self.finish_traffic(pause=0.5)
 
     def extra_metrics(self) -> dict:

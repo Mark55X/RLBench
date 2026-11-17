@@ -10,7 +10,8 @@ keyframes never account for the obstacles: the layer between keyframes has to.
     from rlbench.dynamic_bench.keyframes import static_episode
     descriptions, obs, demo, keyframes = static_episode(task_env, seed=3)
     # keyframes[k] = {'index', 'position', 'quaternion' (x, y, z, w; Panda_tip frame), 'gripper_open',
-    #                 'ignore_collisions', 'action' (PerAct vector [x y z qx qy qz qw open ignore_collisions])}
+    #                 'ignore_collisions', 'action' (PerAct vector [x y z qx qy qz qw open ignore_collisions]),
+#                 'joint_positions' (the arm's configuration there in the static demo)}
 
 static_episode also tells the task which keyframes the robot follows (dynbench_set_keyframes), for the metrics.
 Without a learned policy, these keyframes let every benchmark task be run with any keyframe follower.
@@ -59,6 +60,7 @@ def keyframes_from_demo(demo) -> List[dict]:
         ignore = float(bool(getattr(prev, 'ignore_collisions', 0.0)))
         out.append({'index': int(i), 'position': [float(x) for x in pose[:3]], 'quaternion': [float(x) for x in q],
                     'gripper_open': opened, 'ignore_collisions': ignore,
+                    'joint_positions': [float(x) for x in obs.joint_positions],
                     'action': [float(x) for x in pose[:3]] + [float(x) for x in q] + [opened, ignore]})
     return out
 

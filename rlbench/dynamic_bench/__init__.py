@@ -22,18 +22,18 @@ TASKS: Dict[str, str] = {
     'dyn_stack_blocks_goal_taken': 'DynStackBlocksGoalTaken',
     'dyn_stack_blocks_tunnel': 'DynStackBlocksTunnel',
     'dyn_close_jar_item_in_path': 'DynCloseJarItemInPath',
-    'dyn_shape_sorter_book_on_hole': 'DynShapeSorterBookOnHole',
+    'dyn_shape_sorter_tablet_on_hole': 'DynShapeSorterTabletOnHole',
     'dyn_place_wine_bottle_in_path': 'DynPlaceWineBottleInPath',
     'dyn_put_groceries_grasp_blocked': 'DynPutGroceriesGraspBlocked',
     'dyn_slide_block_obstacle_in_path': 'DynSlideBlockObstacleInPath',
-    'dyn_slide_block_target_taken': 'DynSlideBlockTargetTaken',
-    'dyn_slide_block_book_across': 'DynSlideBlockBookAcross',
+    'dyn_shape_sorter_box_over_shape': 'DynShapeSorterBoxOverShape',
+    'dyn_slide_block_board_pinned': 'DynSlideBlockBoardPinned',
     'dyn_insert_peg_hand_in_way': 'DynInsertPegHandInWay',
 }
 
 
 # tasks defined in another task's module
-MODULES: Dict[str, str] = {'dyn_slide_block_target_taken': 'dyn_slide_block_obstacle_in_path'}
+MODULES: Dict[str, str] = {}
 
 
 def task_names() -> List[str]:

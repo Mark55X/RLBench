@@ -23,6 +23,7 @@ after a pause (up to MAX_ATTEMPTS times), from the first step after its last gra
 done). Before moving the palm to a point the robot's gripper is near, the person waits for the robot to leave.
 """
 
+import json
 import os
 from typing import Callable, Dict, List, Optional, Sequence
 
@@ -138,7 +139,7 @@ class Move(Step):
                     if self.waiting_since is None:
                         self.waiting_since = t
                         person.task.log_event('person_waits_for_robot', at=[round(float(x), 3) for x in seg.p1])
-                    elif t - self.waiting_since > ROBOT_WAIT_MAX:
+                    elif t - self.waiting_since > person.patience():
                         person.fail_job('robot in the way')
                     return False
                 self.started, self.t0, self.waiting_since, self.paused = True, t, None, False
@@ -152,7 +153,7 @@ class Move(Step):
                     if not self.paused:
                         self.paused, self.pause_start = True, t
                         person.task.log_event('person_pauses')
-                    elif t - self.pause_start > ROBOT_WAIT_MAX:
+                    elif t - self.pause_start > person.patience():
                         person.fail_job('robot in the way')
                         return False
                     self.t0 += person.dt
@@ -162,7 +163,7 @@ class Move(Step):
                 if not self.paused:
                     self.paused, self.pause_start = True, t
                     person.task.log_event('person_pauses')
-                elif t - self.pause_start > ROBOT_WAIT_MAX:
+                elif t - self.pause_start > person.patience():
                     person.fail_job('robot in the way')
                     return False
                 self.t0 += person.dt
@@ -253,15 +254,39 @@ class Job:
     def __init__(self, name: str, steps: List[Step]):
         self.name, self.steps = name, steps
         self.k = 0
-        self.status = 'pending'          # pending, running, done, gave_up
+        self.status = 'pending'          # pending, running, done, gave_up, withdrawn
         self.attempts = 0
         self.reason = ''
         self.preemptible = False         # a scene change: the task's jobs may interrupt it
+        self.patience = ROBOT_WAIT_MAX   # [s] how long the person waits for the robot to move away in this job
+        # after a contact with the robot: 'resume' the job (things to bring), or 'withdraw' (a hand resting
+        # somewhere: touched by the robot, she keeps it away, and drops the hand jobs still queued)
+        self.after_contact = 'resume'
 
 
 # -------------------------------------------------------------------------------------------------------------------
 # The person
 # -------------------------------------------------------------------------------------------------------------------
+
+GEOMETRY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'person_geometry.json')
+
+
+def _load_geometry() -> Optional[dict]:
+    """Body measures from Sitting Bill's meshes (person frame), if read before at this scale."""
+    try:
+        with open(GEOMETRY_FILE) as f:
+            geo = json.load(f)
+        return geo if abs(geo.get('scale', 0.0) - SCALE) < 1e-9 else None
+    except (OSError, ValueError):
+        return None
+
+
+def _save_geometry(geo: dict) -> None:
+    try:
+        with open(GEOMETRY_FILE, 'w') as f:
+            json.dump(geo, f, indent=1)
+    except OSError:
+        pass
 
 class Person:
 
@@ -308,8 +333,21 @@ class Person:
         self.hip_height = float(hip_w[2])
         self.S_rest = p_of('Bill_rightShoulderJoint')
         self.E_rest = p_of('Bill_rightElbowJoint')
-        fore = mesh_p(objs['Bill_rightForearm'])
-        tip = fore[np.argmax(np.linalg.norm(fore - self.E_rest, axis=1))]
+        # what the body's meshes give (in the person frame), read once and kept in the assets: reading a mesh right
+        # after the model was scaled now and then crashes CoppeliaSim 4.1 (simGetShapeMesh hands a stale buffer)
+        geo = _load_geometry()
+        if geo is None:
+            fore = mesh_p(objs['Bill_rightForearm'])
+            geo = {'scale': SCALE,
+                   'forearm_tip': fore[np.argmax(np.linalg.norm(fore - self.E_rest, axis=1))].tolist(), 'boxes': {}}
+            for key, name, z_min in (('torso', 'Bill_body', 0.10), ('head', 'Bill_head', None),
+                                     ('left_arm', 'Bill_leftUpperArm', None), ('legs', 'Bill_upperLegs', None)):
+                v = mesh_p(objs[name])
+                if z_min is not None:
+                    v = v[v[:, 2] > z_min]
+                geo['boxes'][key] = [v.min(0).tolist(), v.max(0).tolist()]
+            _save_geometry(geo)
+        tip = np.asarray(geo['forearm_tip'], dtype=np.float64)
         self.L1 = float(np.linalg.norm(self.E_rest - self.S_rest))
         self.L_tip = float(np.linalg.norm(tip - self.E_rest))
         self.L2 = self.L_tip - 0.085 * SCALE            # palm point: 8.5 cm (scaled) back from the finger tips
@@ -330,11 +368,8 @@ class Person:
             shape.set_parent(parent, keep_in_place=True)
             return shape
 
-        def box_around(shape, shrink=0.9, z_min=None):
-            v = mesh_p(shape)
-            if z_min is not None:
-                v = v[v[:, 2] > z_min]
-            lo, hi = v.min(0), v.max(0)
+        def box_around(key, shrink=0.9):
+            lo, hi = (np.asarray(x, dtype=np.float64) for x in geo['boxes'][key])
             m = np.eye(4)
             m[:3, 3] = 0.5 * (lo + hi)
             return (hi - lo) * shrink, m
@@ -342,14 +377,14 @@ class Person:
         self.root.set_matrix(w_p)
         # torso (leans about the hip), with the head and the resting left arm
         # the torso: the part of the body mesh above the pelvis (the seated mesh also covers the lap)
-        size, m = box_around(objs['Bill_body'], 0.85, z_min=0.10)
+        size, m = box_around('torso', 0.85)
         self.torso = proxy(PrimitiveShape.CUBOID, size, m, 'torso', self.root)
         self.torso_rest = inv @ self.torso.get_matrix()
-        size, m = box_around(objs['Bill_head'], 0.9)
+        size, m = box_around('head', 0.9)
         self.head = proxy(PrimitiveShape.SPHERE, [size.max()] * 3, m, 'head', self.torso)
-        size, m = box_around(objs['Bill_leftUpperArm'], 0.85)
+        size, m = box_around('left_arm', 0.85)
         self.left_arm = proxy(PrimitiveShape.CUBOID, size, m, 'left_upper_arm', self.torso)
-        size, m = box_around(objs['Bill_upperLegs'], 0.9)
+        size, m = box_around('legs', 0.9)
         self.legs = proxy(PrimitiveShape.CUBOID, size, m, 'legs', self.root)
         # right arm: upper arm (shoulder-elbow), forearm (elbow-wrist), hand (wrist-finger tips), in segment frames
         self.upper = proxy(PrimitiveShape.CYLINDER, [0.10 * SCALE, 0.10 * SCALE, self.L1],
@@ -737,6 +772,9 @@ class Person:
             if self.held is not None:
                 self._carry(self.to_world(keep_palm))
 
+    def patience(self) -> float:
+        return self.job.patience if self.job is not None else ROBOT_WAIT_MAX
+
     def arm_hits_robot(self, palm_world) -> bool:
         """With the palm there, the arm (or what the hand carries) would touch the robot."""
         keep = self.palm.copy()
@@ -863,7 +901,13 @@ class Person:
         job = self.job
         self.task.log_event('person_flinches', job=job.name if job else None)
         self.contacts += 1
-        if job is not None and job.name != 'rest':
+        if job is not None and job.name != 'rest' and job.after_contact == 'withdraw':
+            for j in [job] + [q for q in self.queue if q.after_contact == 'withdraw']:
+                j.status, j.reason = 'withdrawn', 'robot contact'
+            self.queue = [q for q in self.queue if q.status != 'withdrawn']
+            self.task.log_event('person_withdraws', job=job.name)
+            job = None
+        elif job is not None and job.name != 'rest':
             job.attempts += 1
             if job.attempts >= MAX_ATTEMPTS:
                 job.status, job.reason = 'gave_up', 'robot contact'
