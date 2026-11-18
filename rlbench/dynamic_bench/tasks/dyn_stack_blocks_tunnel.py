@@ -44,7 +44,8 @@ class DynStackBlocksTunnel(DynamicBenchTask, StackBlocks):
     LEVEL_NOTES = {
         'L0': 'the tunnel stands over a block the robot has to grasp from the start',
         'L1': 'right after the start the person slides the tunnel (it stands on the table next to a block the robot '
-              'has to grasp) over that block (peak speed 1 m/s, slide 0.25 m/s)',
+              'grasps later, not the first) over that block (peak speed 1 m/s, slide 0.25 m/s): it is at rest long '
+              'before the robot gets there, while the robot works on the first block',
         'L2': 'when the robot grasps its first block, the person slides the tunnel over a block it will grasp later: '
               'it moves while the robot carries the first block, and covers the next grasp',
     }
@@ -66,9 +67,12 @@ class DynStackBlocksTunnel(DynamicBenchTask, StackBlocks):
         return descriptions
 
     def setup_episode(self, rng: np.random.Generator) -> None:
-        # the block it ends up over: one the robot still has to grasp (L2: not the first, it covers the next grasp
-        # while the robot carries the first), within easy reach of the robot (it must get to one end of the tunnel)
-        first = 1 if self.level == 'L2' else 0
+        # the block it ends up over: one the robot still has to grasp, within easy reach of the robot (it must get to
+        # one end of the tunnel). L0: the first one, covered from the start. L1 / L2: a later one, so that the person,
+        # who starts at once (L1) or when the robot holds its first block (L2), slides it over the block before the
+        # robot gets there whatever the robot's speed. Over the first block the person and the robot would race for
+        # it, and the person, who yields to a gripper coming close, would cover it only after the robot took it.
+        first = 0 if self.level == 'L0' else 1
         cands = [b for b in self.target_blocks[first:self.blocks_to_stack]
                  if 0.40 <= np.linalg.norm(np.asarray(b.get_position())[:2] - ROBOT_BASE_XY) <= 0.62]
         if not cands:

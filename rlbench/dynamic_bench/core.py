@@ -345,6 +345,7 @@ class DynamicBenchTask(object):
     def _track_speeds(self) -> None:
         """Peak and mean (while moving) speed of the person's hand and of the gripper tip over the active steps."""
         now = {'tip': self.tip_position()}
+        self._tip_path.append(now['tip'])
         if not self.person.hidden:
             now['hand'] = self.person.palm_world()
         for key, p in now.items():
@@ -369,6 +370,35 @@ class DynamicBenchTask(object):
         for k in ('peak', 'mean'):
             r = out['robot_tip_' + k]
             out['ratio_' + k] = round(out['person_hand_' + k] / r, 2) if r > MOVING else None
+        return out
+
+    def trajectory_metrics(self) -> dict:
+        """Length and smoothness of the gripper tip's path over the active steps: path length [m], RMS and peak jerk
+        [m/s^3] and peak acceleration [m/s^2] (finite differences at the simulation step), and the number of stops
+        (the tip still, below 1 cm/s, for at least 0.5 s after moving)."""
+        p = np.asarray(self._tip_path, dtype=np.float64)
+        out = {'path_length_m': 0.0, 'jerk_rms': None, 'jerk_peak': None, 'accel_peak': None, 'stops': 0}
+        if len(p) < 2:
+            return out
+        dt = self._dt
+        v = np.diff(p, axis=0) / dt
+        out['path_length_m'] = round(float(np.linalg.norm(np.diff(p, axis=0), axis=1).sum()), 4)
+        if len(v) >= 3:
+            a = np.diff(v, axis=0) / dt
+            j = np.linalg.norm(np.diff(a, axis=0) / dt, axis=1)
+            out['jerk_rms'] = round(float(np.sqrt(np.mean(j ** 2))), 3)
+            out['jerk_peak'] = round(float(j.max()), 3)
+            out['accel_peak'] = round(float(np.linalg.norm(a, axis=1).max()), 3)
+        speed = np.linalg.norm(v, axis=1)
+        still, moved, stops = 0, False, 0
+        for s in speed:
+            if s < 0.01:
+                still += 1
+                if moved and still == int(round(0.5 / dt)):
+                    stops += 1
+            else:
+                still, moved = 0, True
+        out['stops'] = stops
         return out
 
     def dynbench_object_handles(self) -> List[int]:
@@ -440,6 +470,7 @@ class DynamicBenchTask(object):
         m['keyframes'] = {'n': len(self.keyframes), 'reached': self.kf_next if self.keyframes else 0}
         m.update(self._side_effects())
         m['speeds'] = self.speed_metrics()
+        m['trajectory'] = self.trajectory_metrics()
         m['person'] = {'side': self.person.side, 'seat_x': round(self.person.seat_x, 3),
                        'flinches': getattr(self.person, 'contacts', 0), 'bumped_objects': dict(self.person_bumps),
                        'jobs': [{'name': j.name, 'status': j.status, 'attempts': j.attempts, 'reason': j.reason}
@@ -480,6 +511,7 @@ class DynamicBenchTask(object):
         # speed statistics of the person's hand and of the gripper tip: [peak, sum while moving, steps moving]
         self.speed_stats = {'hand': [0.0, 0.0, 0], 'tip': [0.0, 0.0, 0]}
         self._speed_prev = {}
+        self._tip_path: List[np.ndarray] = []            # gripper tip at every active step (trajectory metrics)
         self.event_log: List[dict] = []
         self.jobs_log: List[Job] = []
         self.phase = 'idle'
